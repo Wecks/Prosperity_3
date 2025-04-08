@@ -1,0 +1,522 @@
+Sandbox logs:
+{
+  "sandboxLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:19.461Z 45061840-439b-4a23-afd9-caee55290631 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:19.461Z 45061840-439b-4a23-afd9-caee55290631 Task timed out after 1.06 seconds\"}",
+  "timestamp": 0
+}
+{
+  "sandboxLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:20.900Z fff05906-4650-4c27-9c56-5fe83b9a0f82 Task timed out after 1.18 seconds\"}",
+  "lambdaLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:20.900Z fff05906-4650-4c27-9c56-5fe83b9a0f82 Task timed out after 1.18 seconds\"}",
+  "timestamp": 100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:22.020Z 91a3c914-7d9f-4a26-af04-d0c8e6bf6aee Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:22.020Z 91a3c914-7d9f-4a26-af04-d0c8e6bf6aee Task timed out after 1.06 seconds\"}",
+  "timestamp": 200
+}
+{
+  "sandboxLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:23.260Z 8f999e03-6e3a-4616-b3aa-35707a4641aa Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:23.260Z 8f999e03-6e3a-4616-b3aa-35707a4641aa Task timed out after 1.02 seconds\"}",
+  "timestamp": 300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:24.479Z 7f616276-8653-4c52-b1d0-26f638935feb Task timed out after 1.18 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:24.479Z 7f616276-8653-4c52-b1d0-26f638935feb Task timed out after 1.18 seconds\"}",
+  "timestamp": 400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:25.526Z 3196630a-5b12-4b05-9a5f-5c5e24cbd952 Task timed out after 1.03 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:25.526Z 3196630a-5b12-4b05-9a5f-5c5e24cbd952 Task timed out after 1.03 seconds\"}",
+  "timestamp": 500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:26.640Z 3e48c874-6cfb-4943-9cfd-b881f8f8d15d Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:26.640Z 3e48c874-6cfb-4943-9cfd-b881f8f8d15d Task timed out after 1.08 seconds\"}",
+  "timestamp": 600
+}
+{
+  "sandboxLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:27.939Z 195f146a-3ac7-498c-b832-08f7373a5792 Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:27.939Z 195f146a-3ac7-498c-b832-08f7373a5792 Task timed out after 1.08 seconds\"}",
+  "timestamp": 700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:29.099Z cdeb353b-0b8a-45e2-a1db-87f966e295b5 Task timed out after 1.14 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:29.099Z cdeb353b-0b8a-45e2-a1db-87f966e295b5 Task timed out after 1.14 seconds\"}",
+  "timestamp": 800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:30.240Z 4606dd80-72dc-4fe8-9b68-e934191f17e9 Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:30.240Z 4606dd80-72dc-4fe8-9b68-e934191f17e9 Task timed out after 1.10 seconds\"}",
+  "timestamp": 900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:31.420Z 4e704ea7-1954-43c5-92a1-a1155261885f Task timed out after 1.12 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:31.420Z 4e704ea7-1954-43c5-92a1-a1155261885f Task timed out after 1.12 seconds\"}",
+  "timestamp": 1000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:32.599Z 4d059e8c-0b27-40dc-979e-37cf83a8e545 Task timed out after 1.11 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:32.599Z 4d059e8c-0b27-40dc-979e-37cf83a8e545 Task timed out after 1.11 seconds\"}",
+  "timestamp": 1100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:33.660Z cddb4d16-8c36-43a4-92f7-abe5e105cedc Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:33.660Z cddb4d16-8c36-43a4-92f7-abe5e105cedc Task timed out after 1.02 seconds\"}",
+  "timestamp": 1200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:34.759Z 73e8a449-5b18-4a22-9345-021cfc79e7b1 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:34.759Z 73e8a449-5b18-4a22-9345-021cfc79e7b1 Task timed out after 1.04 seconds\"}",
+  "timestamp": 1300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:35.919Z 29e516f6-6407-4b1c-8799-b50b14d4f406 Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:35.919Z 29e516f6-6407-4b1c-8799-b50b14d4f406 Task timed out after 1.10 seconds\"}",
+  "timestamp": 1400
+}
+{
+  "sandboxLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:37.420Z 36f8b4f8-c523-48da-b1d9-6184f2339488 Task timed out after 1.28 seconds\"}",
+  "lambdaLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:37.420Z 36f8b4f8-c523-48da-b1d9-6184f2339488 Task timed out after 1.28 seconds\"}",
+  "timestamp": 1500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:38.518Z 1b8cb30d-687f-42b4-b569-07ae582a1c28 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:38.518Z 1b8cb30d-687f-42b4-b569-07ae582a1c28 Task timed out after 1.06 seconds\"}",
+  "timestamp": 1600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:39.580Z ac97aea6-cc79-4bc9-9e00-47f478ef5fa8 Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:39.580Z ac97aea6-cc79-4bc9-9e00-47f478ef5fa8 Task timed out after 1.02 seconds\"}",
+  "timestamp": 1700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:40.719Z 1cfa3178-2916-401a-a31e-a7c8ef54b5f9 Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:40.719Z 1cfa3178-2916-401a-a31e-a7c8ef54b5f9 Task timed out after 1.08 seconds\"}",
+  "timestamp": 1800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:41.779Z 32cb557a-9f11-4459-87fc-6f41271b8568 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:41.779Z 32cb557a-9f11-4459-87fc-6f41271b8568 Task timed out after 1.04 seconds\"}",
+  "timestamp": 1900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:42.879Z ec4d69d2-b89a-430f-b65d-9ed596867c50 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:42.879Z ec4d69d2-b89a-430f-b65d-9ed596867c50 Task timed out after 1.06 seconds\"}",
+  "timestamp": 2000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:43.939Z 3001f936-1d48-40c9-b24f-47c0a5f4a880 Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:43.939Z 3001f936-1d48-40c9-b24f-47c0a5f4a880 Task timed out after 1.02 seconds\"}",
+  "timestamp": 2100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:45.000Z d3a1e306-8e84-4ecf-bdda-b6e8028e9abd Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:45.000Z d3a1e306-8e84-4ecf-bdda-b6e8028e9abd Task timed out after 1.02 seconds\"}",
+  "timestamp": 2200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:46.140Z 8bf29048-9b43-4729-be97-be1e5ebb79cb Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:46.140Z 8bf29048-9b43-4729-be97-be1e5ebb79cb Task timed out after 1.08 seconds\"}",
+  "timestamp": 2300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:47.240Z 55a7798d-d5d0-4b40-a1d6-19bf8d801f1b Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:47.240Z 55a7798d-d5d0-4b40-a1d6-19bf8d801f1b Task timed out after 1.04 seconds\"}",
+  "timestamp": 2400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:48.399Z ba3d0251-33e3-4c69-a320-dafabf276c62 Task timed out after 1.12 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:48.399Z ba3d0251-33e3-4c69-a320-dafabf276c62 Task timed out after 1.12 seconds\"}",
+  "timestamp": 2500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:49.559Z db6f3669-75ac-4021-884b-8d920b52aa87 Task timed out after 1.12 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:49.559Z db6f3669-75ac-4021-884b-8d920b52aa87 Task timed out after 1.12 seconds\"}",
+  "timestamp": 2600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:50.700Z f17697df-ee18-4dd5-a3f0-6447ba37cf0d Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:50.700Z f17697df-ee18-4dd5-a3f0-6447ba37cf0d Task timed out after 1.10 seconds\"}",
+  "timestamp": 2700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:51.839Z 9cf57c70-2a3a-48bb-a5c1-5c34c3867e69 Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:51.839Z 9cf57c70-2a3a-48bb-a5c1-5c34c3867e69 Task timed out after 1.10 seconds\"}",
+  "timestamp": 2800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:53.319Z deabf91e-a915-47df-8128-a6a8ef3ff5dc Task timed out after 1.44 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:53.319Z deabf91e-a915-47df-8128-a6a8ef3ff5dc Task timed out after 1.44 seconds\"}",
+  "timestamp": 2900
+}
+{
+  "sandboxLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:54.639Z 99400de5-0f50-4ab8-9a82-ce4745d56e18 Task timed out after 1.11 seconds\"}",
+  "lambdaLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:01:54.639Z 99400de5-0f50-4ab8-9a82-ce4745d56e18 Task timed out after 1.11 seconds\"}",
+  "timestamp": 3000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:55.780Z f49b4185-c50f-478c-8dd4-07094c6c39ee Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:55.780Z f49b4185-c50f-478c-8dd4-07094c6c39ee Task timed out after 1.10 seconds\"}",
+  "timestamp": 3100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:56.900Z d34017cf-924d-42ad-b2e0-465b115eebe0 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:56.900Z d34017cf-924d-42ad-b2e0-465b115eebe0 Task timed out after 1.04 seconds\"}",
+  "timestamp": 3200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:58.039Z 8236a362-ba4b-4651-9e7c-9c83b6992181 Task timed out after 1.09 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:58.039Z 8236a362-ba4b-4651-9e7c-9c83b6992181 Task timed out after 1.09 seconds\"}",
+  "timestamp": 3300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:59.120Z 88de81f3-4504-425c-81b8-a9f930400bdb Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:01:59.120Z 88de81f3-4504-425c-81b8-a9f930400bdb Task timed out after 1.04 seconds\"}",
+  "timestamp": 3400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:00.239Z 1a9bb0ec-6546-4302-bf0c-0458910d5269 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:00.239Z 1a9bb0ec-6546-4302-bf0c-0458910d5269 Task timed out after 1.06 seconds\"}",
+  "timestamp": 3500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:01.299Z e5ce92d1-5b2e-4582-8407-524fb7f683c9 Task timed out after 1.03 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:01.299Z e5ce92d1-5b2e-4582-8407-524fb7f683c9 Task timed out after 1.03 seconds\"}",
+  "timestamp": 3600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:02.379Z b7017dc6-6bd5-4cec-83e4-1f9df420e285 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:02.379Z b7017dc6-6bd5-4cec-83e4-1f9df420e285 Task timed out after 1.04 seconds\"}",
+  "timestamp": 3700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:03.481Z 8eae1b45-9659-4d6e-ba90-471218383544 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:03.481Z 8eae1b45-9659-4d6e-ba90-471218383544 Task timed out after 1.06 seconds\"}",
+  "timestamp": 3800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:04.560Z e03b3c9c-050b-40d5-9c07-f29b58cf5adc Task timed out after 1.05 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:04.560Z e03b3c9c-050b-40d5-9c07-f29b58cf5adc Task timed out after 1.05 seconds\"}",
+  "timestamp": 3900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:05.660Z 3193117f-475c-4152-b980-7595831be43d Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:05.660Z 3193117f-475c-4152-b980-7595831be43d Task timed out after 1.06 seconds\"}",
+  "timestamp": 4000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:06.760Z bbe01bc2-e72d-480e-8885-4955c4774570 Task timed out after 1.05 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:06.760Z bbe01bc2-e72d-480e-8885-4955c4774570 Task timed out after 1.05 seconds\"}",
+  "timestamp": 4100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:07.880Z dec58d2a-1966-4b8f-b28c-abddaa2a6e69 Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:07.880Z dec58d2a-1966-4b8f-b28c-abddaa2a6e69 Task timed out after 1.08 seconds\"}",
+  "timestamp": 4200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:09.060Z aebcd45c-c106-4efd-98e8-465dbafbcf26 Task timed out after 1.14 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:09.060Z aebcd45c-c106-4efd-98e8-465dbafbcf26 Task timed out after 1.14 seconds\"}",
+  "timestamp": 4300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:10.239Z a6378fed-2c43-4599-9ea8-c7adb9ff6e2f Task timed out after 1.12 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:10.239Z a6378fed-2c43-4599-9ea8-c7adb9ff6e2f Task timed out after 1.12 seconds\"}",
+  "timestamp": 4400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:11.359Z b014f222-6a26-4408-884a-23c85f6a5235 Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:11.359Z b014f222-6a26-4408-884a-23c85f6a5235 Task timed out after 1.08 seconds\"}",
+  "timestamp": 4500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:12.420Z 84f88920-3dde-47e9-a08a-f15f07e33ee2 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:12.420Z 84f88920-3dde-47e9-a08a-f15f07e33ee2 Task timed out after 1.04 seconds\"}",
+  "timestamp": 4600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:13.480Z 4e5d2814-2d07-4a75-8e70-1e18b1e953be Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:13.480Z 4e5d2814-2d07-4a75-8e70-1e18b1e953be Task timed out after 1.02 seconds\"}",
+  "timestamp": 4700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:14.639Z 1c6d4521-5703-424b-9847-42dac30175fe Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:14.639Z 1c6d4521-5703-424b-9847-42dac30175fe Task timed out after 1.06 seconds\"}",
+  "timestamp": 4800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:15.859Z f17aa6d6-7347-476b-a7b3-1cacda075fef Task timed out after 1.18 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:15.859Z f17aa6d6-7347-476b-a7b3-1cacda075fef Task timed out after 1.18 seconds\"}",
+  "timestamp": 4900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:17.021Z 01f4be24-3c0e-402a-9d76-e788236d725a Task timed out after 1.14 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:17.021Z 01f4be24-3c0e-402a-9d76-e788236d725a Task timed out after 1.14 seconds\"}",
+  "timestamp": 5000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:18.100Z ab46121b-9b9a-4652-a9b6-273ce6572d6b Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:18.100Z ab46121b-9b9a-4652-a9b6-273ce6572d6b Task timed out after 1.02 seconds\"}",
+  "timestamp": 5100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:19.180Z e1f9645a-370e-428b-9cba-1023d09973e4 Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:19.180Z e1f9645a-370e-428b-9cba-1023d09973e4 Task timed out after 1.02 seconds\"}",
+  "timestamp": 5200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:20.339Z 3fd9737b-8f72-4391-9150-2aec72e04436 Task timed out after 1.11 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:20.339Z 3fd9737b-8f72-4391-9150-2aec72e04436 Task timed out after 1.11 seconds\"}",
+  "timestamp": 5300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:21.479Z 97f9e6a9-a3ce-475a-9fca-5d16435501d5 Task timed out after 1.05 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:21.479Z 97f9e6a9-a3ce-475a-9fca-5d16435501d5 Task timed out after 1.05 seconds\"}",
+  "timestamp": 5400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:22.559Z 9b199373-a3d8-467e-8684-5c06a0b0cef1 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:22.559Z 9b199373-a3d8-467e-8684-5c06a0b0cef1 Task timed out after 1.04 seconds\"}",
+  "timestamp": 5500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:23.640Z 19b2a882-80fe-4968-a936-b3cf49864386 Task timed out after 1.03 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:23.640Z 19b2a882-80fe-4968-a936-b3cf49864386 Task timed out after 1.03 seconds\"}",
+  "timestamp": 5600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:24.799Z 9cf0db44-ab46-463d-b704-377dff916dc3 Task timed out after 1.12 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:24.799Z 9cf0db44-ab46-463d-b704-377dff916dc3 Task timed out after 1.12 seconds\"}",
+  "timestamp": 5700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:26.120Z 749d6665-694e-43de-891a-d3af7aba7113 Task timed out after 1.28 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:26.120Z 749d6665-694e-43de-891a-d3af7aba7113 Task timed out after 1.28 seconds\"}",
+  "timestamp": 5800
+}
+{
+  "sandboxLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:02:27.460Z 791ca32d-f830-4314-8b8c-8bf2109d97e6 Task timed out after 1.11 seconds\"}",
+  "lambdaLog": "[ERROR] NameError: name 'Listing' is not defined\\n{\"errorMessage\":\"2025-04-08T12:02:27.460Z 791ca32d-f830-4314-8b8c-8bf2109d97e6 Task timed out after 1.11 seconds\"}",
+  "timestamp": 5900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:28.579Z a134d763-7d68-4316-92ec-5e14be54479c Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:28.579Z a134d763-7d68-4316-92ec-5e14be54479c Task timed out after 1.06 seconds\"}",
+  "timestamp": 6000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:29.659Z c16862b7-648d-42f0-932c-7b229724b97b Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:29.659Z c16862b7-648d-42f0-932c-7b229724b97b Task timed out after 1.06 seconds\"}",
+  "timestamp": 6100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:30.819Z edcf370c-2560-4884-9707-f8065ca6c7dc Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:30.819Z edcf370c-2560-4884-9707-f8065ca6c7dc Task timed out after 1.10 seconds\"}",
+  "timestamp": 6200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:31.940Z 07f3c657-cb50-4e43-b86e-6f2d65d28c97 Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:31.940Z 07f3c657-cb50-4e43-b86e-6f2d65d28c97 Task timed out after 1.08 seconds\"}",
+  "timestamp": 6300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:33.059Z 04526796-5fa6-4a9f-96ce-b749b345f33d Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:33.059Z 04526796-5fa6-4a9f-96ce-b749b345f33d Task timed out after 1.08 seconds\"}",
+  "timestamp": 6400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:34.159Z 44bf7aeb-1b6c-4760-bc6d-468e42d6e088 Task timed out after 1.05 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:34.159Z 44bf7aeb-1b6c-4760-bc6d-468e42d6e088 Task timed out after 1.05 seconds\"}",
+  "timestamp": 6500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:35.280Z e701ee6e-9019-4eb5-9c2b-b5aedba2d02a Task timed out after 1.07 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:35.280Z e701ee6e-9019-4eb5-9c2b-b5aedba2d02a Task timed out after 1.07 seconds\"}",
+  "timestamp": 6600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:36.380Z fa7fdd3c-d7db-4c38-8a1a-2d293f23cedf Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:36.380Z fa7fdd3c-d7db-4c38-8a1a-2d293f23cedf Task timed out after 1.04 seconds\"}",
+  "timestamp": 6700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:37.479Z 01dca8ee-b60b-4590-8243-eaacdfd25ef8 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:37.479Z 01dca8ee-b60b-4590-8243-eaacdfd25ef8 Task timed out after 1.06 seconds\"}",
+  "timestamp": 6800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:38.559Z c84d43e1-5e24-4196-8933-2fc362707810 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:38.559Z c84d43e1-5e24-4196-8933-2fc362707810 Task timed out after 1.06 seconds\"}",
+  "timestamp": 6900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:39.699Z a5e4446c-efc7-49d1-b8e7-0c1c5db651fc Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:39.699Z a5e4446c-efc7-49d1-b8e7-0c1c5db651fc Task timed out after 1.10 seconds\"}",
+  "timestamp": 7000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:40.799Z a458e319-580d-41e6-870f-fbad0d2c520d Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:40.799Z a458e319-580d-41e6-870f-fbad0d2c520d Task timed out after 1.06 seconds\"}",
+  "timestamp": 7100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:41.899Z 8e8e68fe-17a2-4e55-9bcc-ce689191a721 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:41.899Z 8e8e68fe-17a2-4e55-9bcc-ce689191a721 Task timed out after 1.04 seconds\"}",
+  "timestamp": 7200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:42.980Z 247273b0-684e-472f-89d2-4a19251e8af8 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:42.980Z 247273b0-684e-472f-89d2-4a19251e8af8 Task timed out after 1.04 seconds\"}",
+  "timestamp": 7300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:44.080Z eca9b689-b7ed-4a79-8d07-89edaa1f0563 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:44.080Z eca9b689-b7ed-4a79-8d07-89edaa1f0563 Task timed out after 1.04 seconds\"}",
+  "timestamp": 7400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:45.140Z 95d37eb3-1d6c-4deb-8f33-0bddfa98cf7c Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:45.140Z 95d37eb3-1d6c-4deb-8f33-0bddfa98cf7c Task timed out after 1.02 seconds\"}",
+  "timestamp": 7500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:46.259Z 22f09fb9-f966-4538-a976-89cf063acc8c Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:46.259Z 22f09fb9-f966-4538-a976-89cf063acc8c Task timed out after 1.06 seconds\"}",
+  "timestamp": 7600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:47.679Z 77703a1e-c248-42b6-a8cb-9193c8e5f0ee Task timed out after 1.35 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:47.679Z 77703a1e-c248-42b6-a8cb-9193c8e5f0ee Task timed out after 1.35 seconds\"}",
+  "timestamp": 7700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:48.780Z 61fb62fc-9852-4d3c-a328-eb3c697e4c29 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:48.780Z 61fb62fc-9852-4d3c-a328-eb3c697e4c29 Task timed out after 1.06 seconds\"}",
+  "timestamp": 7800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:49.883Z 09839847-d702-4f76-b760-430f8981ce2f Task timed out after 1.07 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:49.883Z 09839847-d702-4f76-b760-430f8981ce2f Task timed out after 1.07 seconds\"}",
+  "timestamp": 7900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:51.059Z 95d80b7b-68c4-4605-8c93-9e23d4734cb8 Task timed out after 1.14 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:51.059Z 95d80b7b-68c4-4605-8c93-9e23d4734cb8 Task timed out after 1.14 seconds\"}",
+  "timestamp": 8000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:52.199Z d7847123-3d64-4a20-b9db-4c5b9e2a87bd Task timed out after 1.12 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:52.199Z d7847123-3d64-4a20-b9db-4c5b9e2a87bd Task timed out after 1.12 seconds\"}",
+  "timestamp": 8100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:53.299Z c14bd235-523f-44d5-a6b5-912081f3c461 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:53.299Z c14bd235-523f-44d5-a6b5-912081f3c461 Task timed out after 1.06 seconds\"}",
+  "timestamp": 8200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:54.419Z 06831036-6fc1-42a6-8d78-6b428551d800 Task timed out after 1.08 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:54.419Z 06831036-6fc1-42a6-8d78-6b428551d800 Task timed out after 1.08 seconds\"}",
+  "timestamp": 8300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:55.580Z d7715097-c584-4251-a93b-4227cccaecf4 Task timed out after 1.12 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:55.580Z d7715097-c584-4251-a93b-4227cccaecf4 Task timed out after 1.12 seconds\"}",
+  "timestamp": 8400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:56.660Z 40a245df-672c-4219-acf4-019f0443680e Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:56.660Z 40a245df-672c-4219-acf4-019f0443680e Task timed out after 1.02 seconds\"}",
+  "timestamp": 8500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:57.820Z 7506301d-ab00-4bd2-9136-92263a67ecf4 Task timed out after 1.10 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:57.820Z 7506301d-ab00-4bd2-9136-92263a67ecf4 Task timed out after 1.10 seconds\"}",
+  "timestamp": 8600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:58.900Z 36ea35f7-33c6-48be-b32c-b2a2851f1bf2 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:02:58.900Z 36ea35f7-33c6-48be-b32c-b2a2851f1bf2 Task timed out after 1.04 seconds\"}",
+  "timestamp": 8700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:00.019Z ee38eeb1-daca-4b7c-a521-29cbdd200b3b Task timed out after 1.07 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:00.019Z ee38eeb1-daca-4b7c-a521-29cbdd200b3b Task timed out after 1.07 seconds\"}",
+  "timestamp": 8800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:01.119Z 4a164be5-b233-425d-b6d2-6b6e7cb8dfc2 Task timed out after 1.06 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:01.119Z 4a164be5-b233-425d-b6d2-6b6e7cb8dfc2 Task timed out after 1.06 seconds\"}",
+  "timestamp": 8900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:02.199Z 10b3fce2-bebf-4a0a-b2de-dee18d9672c9 Task timed out after 1.03 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:02.199Z 10b3fce2-bebf-4a0a-b2de-dee18d9672c9 Task timed out after 1.03 seconds\"}",
+  "timestamp": 9000
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:03.279Z b6daab9a-6b9e-4b93-9095-d66cdfebde9a Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:03.279Z b6daab9a-6b9e-4b93-9095-d66cdfebde9a Task timed out after 1.04 seconds\"}",
+  "timestamp": 9100
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:05.280Z 12234a27-f4a7-4f53-984b-30c648a63d69 Task timed out after 1.96 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:05.280Z 12234a27-f4a7-4f53-984b-30c648a63d69 Task timed out after 1.96 seconds\"}",
+  "timestamp": 9200
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:06.380Z aa304319-1e68-4078-8273-4c6744a139ce Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:06.380Z aa304319-1e68-4078-8273-4c6744a139ce Task timed out after 1.04 seconds\"}",
+  "timestamp": 9300
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:07.619Z bebb794e-7c67-4eb4-8313-8910f46319a3 Task timed out after 1.09 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:07.619Z bebb794e-7c67-4eb4-8313-8910f46319a3 Task timed out after 1.09 seconds\"}",
+  "timestamp": 9400
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:08.879Z e9110f99-f54e-45a7-9b99-3564c4dd18b5 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:08.879Z e9110f99-f54e-45a7-9b99-3564c4dd18b5 Task timed out after 1.04 seconds\"}",
+  "timestamp": 9500
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:09.940Z 7edc8abd-32b1-480d-bbae-403f7c6926a5 Task timed out after 1.02 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:09.940Z 7edc8abd-32b1-480d-bbae-403f7c6926a5 Task timed out after 1.02 seconds\"}",
+  "timestamp": 9600
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:11.039Z 103a2ad3-ccba-4dc3-a1a9-d534667ef124 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:11.039Z 103a2ad3-ccba-4dc3-a1a9-d534667ef124 Task timed out after 1.04 seconds\"}",
+  "timestamp": 9700
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:12.120Z 764929ee-a2d5-4255-8d15-1ece1b5e4d53 Task timed out after 1.04 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:12.120Z 764929ee-a2d5-4255-8d15-1ece1b5e4d53 Task timed out after 1.04 seconds\"}",
+  "timestamp": 9800
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:13.260Z 55a74608-8aac-45fa-a1e2-321b18539266 Task timed out after 1.09 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:13.260Z 55a74608-8aac-45fa-a1e2-321b18539266 Task timed out after 1.09 seconds\"}",
+  "timestamp": 9900
+}
+{
+  "sandboxLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:14.639Z 67fc50f7-d57f-43ff-a2c3-02491df26a5f Task timed out after 1.33 seconds\"}",
+  "lambdaLog": "\\n{\"errorMessage\":\"2025-04-08T12:03:14.639Z 67fc50f7-d57f-43ff-a2c3-02491df26a5f Task timed out after 1.33 seconds\"}",
+  "timestamp": 10000
+}
+{
+  "sandboxLog": "Lambda errors have reached maximum value for submission 9dba7f8f-d326-4c72-ae13-e9e2958913a3",
+  "lambdaLog": null,
+  "timestamp": 86343
+}
+
+
+
+Activities log:
+day;timestamp;product;bid_price_1;bid_volume_1;bid_price_2;bid_volume_2;bid_price_3;bid_volume_3;ask_price_1;ask_volume_1;ask_price_2;ask_volume_2;ask_price_3;ask_volume_3;mid_price;profit_and_loss
+
+
+
+
+Trade History:
+null
