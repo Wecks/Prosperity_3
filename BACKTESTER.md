@@ -38,10 +38,6 @@ prosperity3bt strategies/your_strategy.py 1 2
 # Merge profit and loss across days
 prosperity3bt strategies/your_strategy.py 1 --merge-pnl
 
-# Automatically open the result in the visualizer when done
-# Assumes your algorithm logs in the visualizer's expected format
-prosperity3bt strategies/your_strategy.py 1 --visualizer
-
 # Write algorithm output to custom file
 prosperity3bt strategies/your_strategy.py 1 --out custom-output.log
 
@@ -63,7 +59,7 @@ Note that these environment variables do not exist in the official submission en
 
 ## Using the Helper Scripts
 
-We've included several helper scripts in the `backtester/` folder to make backtesting easier:
+We've included several (only one for now) helper scripts in the `backtester/` folder to make backtesting easier:
 
 ### backtest.sh
 
@@ -74,16 +70,6 @@ This script allows you to quickly backtest a strategy on a specific round:
 ```
 
 This will run the backtest on the `kelp_strategy.py` file for round 1 and save the output to the `logs/backtest_results` folder.
-
-### compare.sh
-
-This script allows you to compare the performance of different strategies:
-
-```bash
-./backtester/compare.sh kelp_strategy envelope_strategy 1
-```
-
-This will run backtests for both strategies on round 1 and save the outputs to separate log files in the `logs/backtest_results` folder for comparison.
 
 ## Visualizing Results
 
