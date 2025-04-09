@@ -40,7 +40,7 @@ venv.bak/
 .DS_Store
 
 # Logs (optionally exclude all logs if you don't want to commit them)
-# logs/
+logs/
 
 # Keep specific logs you want to share
 # !logs/kelp_4.log
