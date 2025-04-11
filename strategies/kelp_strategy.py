@@ -122,10 +122,6 @@ class Trader:
         # Initialize strategy parameters
         self.mean_price = 2034.5  # Base mean price of KELP observed from logs
 
-        # Define thresholds with rainforest-style fixed values but will be dynamically updated
-        self.buy_threshold = 2033.5  # Buy when price is at or below this
-        self.sell_threshold = 2035.5  # Sell when price is at or above this
-
         # Instrument to track
         self.instrument = "KELP"
 
@@ -158,27 +154,62 @@ class Trader:
         self.realized_pnl = 0
         self.unrealized_pnl = 0
 
-        # Dynamic threshold parameters
-        self.volatility = 0.5  # Estimated volatility
-        self.min_threshold_distance = 0.5  # Minimum distance between mean and thresholds
-        self.adaptive_factor = 0.05  # How quickly to adjust to market changes
-        self.recent_prices = []  # Store recent prices to calculate volatility
-        self.price_history = []  # Longer price history for trend analysis
+        # Price history and moving averages
+        self.price_history = []  # Store price history for calculating moving averages
         self.max_history_length = 100
+        self.long_term_ma_period = 20  # Long-term moving average period
+        self.long_term_ma = self.mean_price  # Initial long-term MA
+        self.volatility = 0.5  # Estimated volatility
+
+        # Define thresholds that will be dynamically updated
+        self.buy_threshold = 2033.5  # Initial value
+        self.sell_threshold = 2035.5  # Initial value
+
+        # Minimum threshold distance
+        self.min_threshold_distance = 0.5
+
+    def calculate_moving_averages(self, new_price):
+        """Calculate moving averages when a new price is available"""
+        # Add the new price to history
+        self.price_history.append(new_price)
+
+        # Trim history if needed
+        if len(self.price_history) > self.max_history_length:
+            self.price_history = self.price_history[-self.max_history_length:]
+
+        # Calculate long-term MA if we have enough data
+        if len(self.price_history) >= self.long_term_ma_period:
+            self.long_term_ma = sum(self.price_history[-self.long_term_ma_period:]) / self.long_term_ma_period
+        else:
+            # Not enough data yet, use exponential smoothing instead
+            self.long_term_ma = 0.95 * self.long_term_ma + 0.05 * new_price
+
+    def calculate_bid_ask_average(self, order_depth):
+        """Calculate the average of best bid and best ask from the order book"""
+        if len(order_depth.buy_orders) > 0 and len(order_depth.sell_orders) > 0:
+            best_bid = max(order_depth.buy_orders.keys())
+            best_ask = min(order_depth.sell_orders.keys())
+            return (best_bid + best_ask) / 2
+        elif len(order_depth.buy_orders) > 0:
+            return max(order_depth.buy_orders.keys())
+        elif len(order_depth.sell_orders) > 0:
+            return min(order_depth.sell_orders.keys())
+        else:
+            return self.mean_price  # Default to mean if no orders
 
     def update_parameters(self, mid_price):
         """
-        Dynamically update strategy parameters based on market conditions
+        Dynamically update strategy parameters based on market conditions and moving averages
         """
+        # Update moving averages
+        self.calculate_moving_averages(mid_price)
+
         # Store recent prices for volatility calculation
-        self.recent_prices.append(mid_price)
-        if len(self.recent_prices) > 10:
-            self.recent_prices.pop(0)  # Keep only last 10 prices
+        self.recent_prices = self.price_history[-10:] if len(self.price_history) >= 10 else self.price_history
 
         # Calculate short-term volatility
         if len(self.recent_prices) >= 3:
-            # Simple volatility calculation: standard deviation would be better
-            # but we'll use max-min range for simplicity
+            # Simple volatility calculation using range
             price_range = max(self.recent_prices) - min(self.recent_prices)
             self.volatility = max(0.5, price_range * 0.5)  # Scale and apply minimum
 
@@ -261,7 +292,9 @@ class Trader:
 
     def run(self, state: TradingState) -> Tuple[Dict[Symbol, List[Order]], int, str]:
         """
-        Main strategy execution method with rainforest-style continuous trading and dynamic thresholds
+        Main strategy execution method with the new optimized approach combining:
+        1. Moving average trend detection (long when price > MA, short when price < MA)
+        2. Bid/ask average for optimized entry points
         """
         # Initialize result dict with empty lists for each symbol
         result = {self.instrument: []}
@@ -279,24 +312,29 @@ class Trader:
         position = state.position.get(self.instrument, 0)
         self.positions["total"] = position
 
-        # Calculate mid price
+        # Calculate mid price and bid/ask average
         mid_price = self.calculate_mid_price(order_depth)
         if mid_price is None:
             trader_data = self.serialize_state()
             logger.flush(state, result, conversions, trader_data)
             return result, conversions, trader_data
 
-        # Update price history and parameters with dynamic thresholds
-        self.price_history.append(mid_price)
-        if len(self.price_history) > self.max_history_length:
-            self.price_history.pop(0)
+        # Calculate bid/ask average for entry point optimization
+        bid_ask_average = self.calculate_bid_ask_average(order_depth)
 
+        # Update parameters including moving averages
         self.update_parameters(mid_price)
         self.update_position_stats()
 
-        # Log current state
+        # Determine trend direction based on price vs long-term MA
+        is_uptrend = mid_price > self.long_term_ma
+        is_downtrend = mid_price < self.long_term_ma
+
+        # Log current state with MA information
         logger.print(f"{self.instrument} - Position: {position}/{self.max_position}, Mean: {self.mean_price:.2f}, Mid: {mid_price}")
-        logger.print(f"Buy threshold: {self.buy_threshold}, Sell threshold: {self.sell_threshold}")
+        logger.print(f"Long-term MA: {self.long_term_ma:.2f}, Bid/Ask Avg: {bid_ask_average:.2f}")
+        logger.print(f"Trend: {'UP' if is_uptrend else ('DOWN' if is_downtrend else 'NEUTRAL')}")
+
         if self.positions["long_total_size"] > 0:
             logger.print(f"Long positions: {self.positions['long_total_size']}x @ avg {self.positions['avg_long_price']:.2f}")
         if self.positions["short_total_size"] > 0:
@@ -306,27 +344,27 @@ class Trader:
         remaining_buy_capacity = self.max_position - position
         remaining_sell_capacity = self.max_position + position
 
-        # Process sell orders in the book (opportunities to buy) - RAINFOREST STYLE
+        # Process sell orders in the book (opportunities to buy)
         if len(order_depth.sell_orders) > 0 and remaining_buy_capacity > 0:
             # Sort sell orders by price (ascending)
             ask_prices = sorted(order_depth.sell_orders.keys())
 
             for ask_price in ask_prices:
-                # Only buy if price is at or below our threshold - CONTINUOUS BUYING
-                if ask_price <= self.buy_threshold:
+                # Buy if:
+                # 1. It's an uptrend (price > long-term MA) AND
+                # 2. The ask price is below the bid/ask average (good entry point)
+                if (is_uptrend and ask_price <= bid_ask_average) or (is_downtrend and ask_price <= self.buy_threshold):
                     ask_volume = abs(order_depth.sell_orders[ask_price])
 
-                    # Calculate position size based on pyramid level
+                    # Calculate position size
                     buy_size = self.determine_position_size(ask_price, position, True)
                     buy_size = min(buy_size, ask_volume, remaining_buy_capacity)
 
                     if buy_size > 0:
-                        # Check if we're closing shorts or opening new longs
-                        if self.positions["short_total_size"] > 0:
-                            logger.print(f"REVERSAL BUY: {buy_size}x at {ask_price} (Closing shorts + new long)")
+                        if is_uptrend:
+                            logger.print(f"TREND BUY: {buy_size}x at {ask_price} (Uptrend + below Bid/Ask Avg: {bid_ask_average:.2f})")
                         else:
-                            pyramid_level = self.determine_pyramid_level(ask_price, True)
-                            logger.print(f"BUY: {buy_size}x at {ask_price} (Pyramid level: {pyramid_level})")
+                            logger.print(f"MEAN REVERSION BUY: {buy_size}x at {ask_price} (Below buy threshold: {self.buy_threshold:.2f})")
 
                         # Place the order
                         orders.append(Order(self.instrument, int(ask_price), buy_size))
@@ -341,27 +379,27 @@ class Trader:
                         if remaining_buy_capacity <= 0:
                             break
 
-        # Process buy orders in the book (opportunities to sell) - RAINFOREST STYLE
+        # Process buy orders in the book (opportunities to sell)
         if len(order_depth.buy_orders) > 0 and remaining_sell_capacity > 0:
             # Sort buy orders by price (descending)
             bid_prices = sorted(order_depth.buy_orders.keys(), reverse=True)
 
             for bid_price in bid_prices:
-                # Only sell if price is at or above our threshold - CONTINUOUS SELLING
-                if bid_price >= self.sell_threshold:
+                # Sell if:
+                # 1. It's a downtrend (price < long-term MA) AND
+                # 2. The bid price is above the bid/ask average (good entry point)
+                if (is_downtrend and bid_price >= bid_ask_average) or (is_uptrend and bid_price >= self.sell_threshold):
                     bid_volume = order_depth.buy_orders[bid_price]
 
-                    # Calculate position size based on pyramid level
+                    # Calculate position size
                     sell_size = self.determine_position_size(bid_price, position, False)
                     sell_size = min(sell_size, abs(bid_volume), remaining_sell_capacity)
 
                     if sell_size > 0:
-                        # Check if we're closing longs or opening new shorts
-                        if self.positions["long_total_size"] > 0:
-                            logger.print(f"REVERSAL SELL: {sell_size}x at {bid_price} (Closing longs + new short)")
+                        if is_downtrend:
+                            logger.print(f"TREND SELL: {sell_size}x at {bid_price} (Downtrend + above Bid/Ask Avg: {bid_ask_average:.2f})")
                         else:
-                            pyramid_level = self.determine_pyramid_level(bid_price, False)
-                            logger.print(f"SELL: {sell_size}x at {bid_price} (Pyramid level: {pyramid_level})")
+                            logger.print(f"MEAN REVERSION SELL: {sell_size}x at {bid_price} (Above sell threshold: {self.sell_threshold:.2f})")
 
                         # Place the order
                         orders.append(Order(self.instrument, int(bid_price), -sell_size))
@@ -384,10 +422,15 @@ class Trader:
 
         # Prepare trader data
         trader_data = self.serialize_state()
+        trader_data_obj = json.loads(trader_data)
+        trader_data_obj["long_term_ma"] = self.long_term_ma
+        trader_data_obj["bid_ask_average"] = bid_ask_average
+        trader_data_obj["is_uptrend"] = is_uptrend
+        trader_data_str = json.dumps(trader_data_obj)
 
         # Let logger handle the flush
-        logger.flush(state, result, conversions, trader_data)
-        return result, conversions, trader_data
+        logger.flush(state, result, conversions, trader_data_str)
+        return result, conversions, trader_data_str
 
     def calculate_mid_price(self, order_depth: OrderDepth) -> float:
         """
