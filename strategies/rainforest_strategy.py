@@ -161,6 +161,23 @@ class Trader:
         self.realized_pnl = 0
         self.unrealized_pnl = 0
 
+    def calculate_average_price(self, buy_orders, sell_orders):
+        """Calculate the average price from all orders in the book"""
+        all_prices = []
+
+        # Add all bid prices (weighted by volume)
+        for bid_price, bid_volume in buy_orders.items():
+            all_prices.extend([bid_price] * bid_volume)
+
+        # Add all ask prices (weighted by volume)
+        for ask_price, ask_volume in sell_orders.items():
+            all_prices.extend([ask_price] * abs(ask_volume))
+
+        if all_prices:
+            return sum(all_prices) / len(all_prices)
+        else:
+            return self.mean_price  # Default to mean if no orders
+
     def calculate_mid_price(self, buy_orders, sell_orders):
         """Calculate the mid price from the order book"""
         if len(buy_orders) > 0 and len(sell_orders) > 0:
@@ -193,10 +210,6 @@ class Trader:
                 # Slowly adjust our mean price based on recent data
                 adjustment_rate = 0.02
                 self.mean_price = (1 - adjustment_rate) * self.mean_price + adjustment_rate * recent_mean
-
-                # Set buy and sell thresholds exactly at 9999 and 10001
-                self.buy_threshold = 9999
-                self.sell_threshold = 10001
 
     def update_position_stats(self):
         """Update average position prices and total sizes"""
@@ -285,6 +298,13 @@ class Trader:
         # Calculate mid price
         mid_price = self.calculate_mid_price(order_depth.buy_orders, order_depth.sell_orders)
 
+        # Calculate the average price of all bids and asks - this will be our threshold
+        average_price = self.calculate_average_price(order_depth.buy_orders, order_depth.sell_orders)
+
+        # Update thresholds to use dynamic average price instead of static values
+        self.buy_threshold = average_price - 1
+        self.sell_threshold = average_price + 1
+
         # Update price history and statistical measures
         self.update_price_history(mid_price)
 
@@ -293,7 +313,7 @@ class Trader:
 
         # Log current state
         logger.print(f"{self.target_product} - Position: {current_position}/{self.max_position}, Mean: {self.mean_price:.2f}, Mid: {mid_price}")
-        logger.print(f"Buy threshold: {self.buy_threshold}, Sell threshold: {self.sell_threshold}")
+        logger.print(f"Average price (threshold): {average_price:.2f}")
         if self.positions["long_total_size"] > 0:
             logger.print(f"Long positions: {self.positions['long_total_size']}x @ avg {self.positions['avg_long_price']:.2f}")
         if self.positions["short_total_size"] > 0:

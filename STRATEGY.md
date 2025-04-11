@@ -12,4 +12,6 @@ Optimiser la stratégie avec des prises de position en mean reversion :
 
 ## Rainforest
 
+Faire la moyenne bid / ask et acheter tous les lots ask qui sont en dessous de la moyenne et vendre tous les lots bid qui sont au dessus. --> Cela permettra plus de flexibilité si le prix varie legerement dans le temps
+
 ## Squid Ink

@@ -42,6 +42,9 @@ venv.bak/
 # Logs (optionally exclude all logs if you don't want to commit them)
 logs/
 
+# Data files (not needed, they are include in the prosperity3bt lib)
+data/
+
 # Keep specific logs you want to share
 # !logs/kelp_4.log
 # !logs/improved_1.log
