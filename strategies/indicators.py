@@ -115,6 +115,354 @@ class Logger:
 
 logger = Logger()
 
+class TechnicalIndicators:
+    @staticmethod
+    def simple_moving_average(prices: list[float], window: int) -> list[float]:
+        """Calculate Simple Moving Average (SMA) for a list of prices.
+
+        Args:
+            prices: List of historical prices
+            window: The window size for the moving average
+
+        Returns:
+            A list of SMA values (same length as prices, with initial values containing None)
+        """
+        if len(prices) < window:
+            return [None] * len(prices)
+
+        result = [None] * (window - 1)
+        for i in range(len(prices) - window + 1):
+            result.append(sum(prices[i:i+window]) / window)
+
+        return result
+
+    @staticmethod
+    def exponential_moving_average(prices: list[float], window: int) -> list[float]:
+        """Calculate Exponential Moving Average (EMA) for a list of prices.
+
+        Args:
+            prices: List of historical prices
+            window: The window size for the EMA
+
+        Returns:
+            A list of EMA values
+        """
+        if len(prices) < window:
+            return [None] * len(prices)
+
+        ema = [None] * (window - 1)
+        # Start with SMA
+        ema.append(sum(prices[:window]) / window)
+
+        # EMA formula: EMA = Price(t) * k + EMA(y) * (1 – k)
+        # where k = 2/(window + 1)
+        k = 2 / (window + 1)
+
+        for i in range(window, len(prices)):
+            ema.append(prices[i] * k + ema[-1] * (1 - k))
+
+        return ema
+
+    @staticmethod
+    def macd(prices: list[float], fast_window: int = 12, slow_window: int = 26, signal_window: int = 9) -> tuple[list[float], list[float], list[float]]:
+        """Calculate the MACD (Moving Average Convergence Divergence) for a list of prices.
+
+        Args:
+            prices: List of historical prices
+            fast_window: Window for the fast EMA (default: 12)
+            slow_window: Window for the slow EMA (default: 26)
+            signal_window: Window for the signal line (default: 9)
+
+        Returns:
+            tuple containing (macd_line, signal_line, histogram)
+        """
+        fast_ema = TechnicalIndicators.exponential_moving_average(prices, fast_window)
+        slow_ema = TechnicalIndicators.exponential_moving_average(prices, slow_window)
+
+        # Calculate MACD line
+        macd_line = [None] * (slow_window - 1)
+        for i in range(slow_window - 1, len(prices)):
+            macd_line.append(fast_ema[i] - slow_ema[i])
+
+        # Calculate signal line using EMA of MACD line
+        valid_macd = [x for x in macd_line if x is not None]
+        signal_line = [None] * (len(prices) - len(valid_macd))
+        signal_line.extend(TechnicalIndicators.exponential_moving_average(valid_macd, signal_window))
+
+        # Calculate histogram (MACD line - signal line)
+        histogram = [None] * max(len(prices) - len(valid_macd) + signal_window - 1, slow_window - 1)
+        for i in range(len(histogram), len(prices)):
+            if macd_line[i] is not None and signal_line[i] is not None:
+                histogram.append(macd_line[i] - signal_line[i])
+            else:
+                histogram.append(None)
+
+        return macd_line, signal_line, histogram
+
+    @staticmethod
+    def relative_strength_index(prices: list[float], window: int = 14) -> list[float]:
+        """Calculate the Relative Strength Index (RSI) for a list of prices.
+
+        Args:
+            prices: List of historical prices
+            window: The window size for the RSI (default: 14)
+
+        Returns:
+            A list of RSI values (0-100)
+        """
+        if len(prices) <= window:
+            return [None] * len(prices)
+
+        # Calculate price changes
+        deltas = [prices[i] - prices[i-1] for i in range(1, len(prices))]
+
+        # Calculate gains and losses
+        gains = [delta if delta > 0 else 0 for delta in deltas]
+        losses = [abs(delta) if delta < 0 else 0 for delta in deltas]
+
+        # Prepare result array
+        rsi = [None] * window
+
+        # Calculate average gain and average loss for the first window
+        avg_gain = sum(gains[:window]) / window
+        avg_loss = sum(losses[:window]) / window
+
+        # Calculate RSI
+        for i in range(window, len(deltas)):
+            # Update average gain and loss using the formula:
+            # avgGain = ((previous avgGain) * (window - 1) + currentGain) / window
+            avg_gain = (avg_gain * (window - 1) + gains[i]) / window
+            avg_loss = (avg_loss * (window - 1) + losses[i]) / window
+
+            if avg_loss == 0:  # Avoid division by zero
+                rsi.append(100)
+            else:
+                rs = avg_gain / avg_loss
+                rsi.append(100 - (100 / (1 + rs)))
+
+        return rsi
+
+    @staticmethod
+    def bollinger_bands(prices: list[float], window: int = 20, num_std: float = 2.0) -> tuple[list[float], list[float], list[float]]:
+        """Calculate Bollinger Bands for a list of prices.
+
+        Args:
+            prices: List of historical prices
+            window: The window size for the moving average (default: 20)
+            num_std: Number of standard deviations for the bands (default: 2.0)
+
+        Returns:
+            tuple containing (upper_band, middle_band, lower_band)
+        """
+        if len(prices) < window:
+            return [None] * len(prices), [None] * len(prices), [None] * len(prices)
+
+        # Calculate SMA (middle band)
+        middle_band = TechnicalIndicators.simple_moving_average(prices, window)
+
+        upper_band = [None] * (window - 1)
+        lower_band = [None] * (window - 1)
+
+        for i in range(window - 1, len(prices)):
+            # Calculate standard deviation
+            std_dev = math.sqrt(sum((prices[j] - middle_band[i])**2 for j in range(i-window+1, i+1)) / window)
+
+            upper_band.append(middle_band[i] + num_std * std_dev)
+            lower_band.append(middle_band[i] - num_std * std_dev)
+
+        return upper_band, middle_band, lower_band
+
+    @staticmethod
+    def stochastic_oscillator(highs: list[float], lows: list[float], closes: list[float],
+                             k_window: int = 14, d_window: int = 3) -> tuple[list[float], list[float]]:
+        """Calculate Stochastic Oscillator for price data.
+
+        Args:
+            highs: List of high prices
+            lows: List of low prices
+            closes: List of closing prices
+            k_window: Window size for %K (default: 14)
+            d_window: Window size for %D (default: 3)
+
+        Returns:
+            tuple containing (%K, %D)
+        """
+        if len(closes) < k_window:
+            return [None] * len(closes), [None] * len(closes)
+
+        k_values = [None] * (k_window - 1)
+
+        for i in range(k_window - 1, len(closes)):
+            window_low = min(lows[i-k_window+1:i+1])
+            window_high = max(highs[i-k_window+1:i+1])
+
+            if window_high - window_low == 0:
+                k_values.append(50)  # Neutral value if no range
+            else:
+                # %K = 100 * (C - L14) / (H14 - L14)
+                k_values.append(100 * (closes[i] - window_low) / (window_high - window_low))
+
+        # Calculate %D by taking SMA of %K
+        d_values = TechnicalIndicators.simple_moving_average(k_values, d_window)
+
+        return k_values, d_values
+
+    @staticmethod
+    def average_true_range(highs: list[float], lows: list[float], closes: list[float], window: int = 14) -> list[float]:
+        """Calculate Average True Range (ATR) for volatility measurement.
+
+        Args:
+            highs: List of high prices
+            lows: List of low prices
+            closes: List of closing prices
+            window: Window size for ATR (default: 14)
+
+        Returns:
+            List of ATR values
+        """
+        if len(closes) <= 1:
+            return [None] * len(closes)
+
+        # Calculate True Range series
+        tr_values = [highs[0] - lows[0]]  # First TR is just the first day's range
+
+        for i in range(1, len(closes)):
+            # TR = max(high - low, abs(high - prev_close), abs(low - prev_close))
+            tr = max(
+                highs[i] - lows[i],
+                abs(highs[i] - closes[i-1]),
+                abs(lows[i] - closes[i-1])
+            )
+            tr_values.append(tr)
+
+        # Calculate ATR using Wilder's smoothing method
+        atr_values = [None] * (window - 1)
+        atr_values.append(sum(tr_values[:window]) / window)
+
+        for i in range(window, len(tr_values)):
+            # Wilder's smoothing: ATR = ((n-1) * prev_ATR + TR) / n
+            atr_values.append((atr_values[-1] * (window - 1) + tr_values[i]) / window)
+
+        return atr_values
+
+    @staticmethod
+    def on_balance_volume(closes: list[float], volumes: list[float]) -> list[float]:
+        """Calculate On-Balance Volume (OBV) indicator.
+
+        Args:
+            closes: List of closing prices
+            volumes: List of volume data
+
+        Returns:
+            List of OBV values
+        """
+        if len(closes) <= 1 or len(closes) != len(volumes):
+            return [0] * len(closes)
+
+        obv = [0]  # Initial OBV value
+
+        for i in range(1, len(closes)):
+            if closes[i] > closes[i-1]:
+                obv.append(obv[-1] + volumes[i])
+            elif closes[i] < closes[i-1]:
+                obv.append(obv[-1] - volumes[i])
+            else:
+                obv.append(obv[-1])
+
+        return obv
+
+    @staticmethod
+    def money_flow_index(highs: list[float], lows: list[float], closes: list[float],
+                        volumes: list[float], window: int = 14) -> list[float]:
+        """Calculate Money Flow Index (MFI) indicator.
+
+        Args:
+            highs: List of high prices
+            lows: List of low prices
+            closes: List of closing prices
+            volumes: List of volume data
+            window: Window size for MFI calculation (default: 14)
+
+        Returns:
+            List of MFI values (0-100)
+        """
+        if len(closes) < window or len(highs) != len(lows) or len(highs) != len(closes) or len(highs) != len(volumes):
+            return [None] * len(closes)
+
+        # Calculate typical price
+        typical_prices = [(highs[i] + lows[i] + closes[i]) / 3 for i in range(len(closes))]
+
+        # Calculate money flow
+        money_flows = [typical_prices[i] * volumes[i] for i in range(len(typical_prices))]
+
+        mfi_values = [None] * (window)
+
+        for i in range(window, len(typical_prices)):
+            positive_flow = 0
+            negative_flow = 0
+
+            # Determine positive and negative flows
+            for j in range(i-window+1, i+1):
+                if j > 0 and typical_prices[j] > typical_prices[j-1]:
+                    positive_flow += money_flows[j]
+                elif j > 0 and typical_prices[j] < typical_prices[j-1]:
+                    negative_flow += money_flows[j]
+
+            if negative_flow == 0:
+                mfi_values.append(100)
+            else:
+                money_ratio = positive_flow / negative_flow
+                mfi_values.append(100 - (100 / (1 + money_ratio)))
+
+        return mfi_values
+
+    @staticmethod
+    def price_rate_of_change(prices: list[float], window: int = 14) -> list[float]:
+        """Calculate Price Rate of Change (ROC) indicator.
+
+        Args:
+            prices: List of prices
+            window: Window size for ROC calculation (default: 14)
+
+        Returns:
+            List of ROC values
+        """
+        if len(prices) <= window:
+            return [None] * len(prices)
+
+        roc_values = [None] * window
+
+        for i in range(window, len(prices)):
+            # ROC = ((Current Price / Price n periods ago) - 1) * 100
+            roc_values.append(((prices[i] / prices[i-window]) - 1) * 100)
+
+        return roc_values
+
+    @staticmethod
+    def get_vwap(state: TradingState, symbol: str, lookback: int = 0) -> float:
+        """Calculate Volume Weighted Average Price (VWAP).
+
+        Args:
+            state: The current TradingState
+            symbol: The symbol to calculate VWAP for
+            lookback: How many timestamps to look back (0 means all available)
+
+        Returns:
+            VWAP value or None if insufficient data
+        """
+        trades = state.market_trades.get(symbol, [])
+        if lookback > 0:
+            current_timestamp = state.timestamp
+            trades = [t for t in trades if current_timestamp - t.timestamp <= lookback]
+
+        if not trades:
+            return None
+
+        total_value = sum(t.price * abs(t.quantity) for t in trades)
+        total_volume = sum(abs(t.quantity) for t in trades)
+
+        return total_value / total_volume if total_volume > 0 else None
+
 class Strategy:
     def __init__(self, symbol: str, limit: int) -> None:
         self.symbol = symbol
@@ -282,6 +630,63 @@ class MarketMakingStrategy(Strategy):
     def load(self, data: JSON) -> None:
         self.window = deque(data)
 
+class MAStrategy(Strategy):
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+
+        self.prices = deque(maxlen=100)
+        self.sma_length = 10
+
+    def act(self, state: TradingState) -> None:
+        # Get the current mid price
+        current_mid = self.get_mid_price(state, self.symbol)
+
+        # Add new prices to our historical record
+        self.prices.append(current_mid)
+
+        sma = simple_moving_average(list(self.prices), self.sma_length)[-1]
+
+        order_depth = state.order_depths[self.symbol]
+        buy_orders = sorted(order_depth.buy_orders.items(), reverse=True)
+        sell_orders = sorted(order_depth.sell_orders.items())
+
+        position = state.position.get(self.symbol, 0)
+        to_buy = self.limit - position
+        to_sell = self.limit + position
+
+        #TODO : implement the logic.
+        # max_buy_price = true_value - 1 if position > self.limit * 0.5 else true_value
+        # min_sell_price = true_value + 1 if position < self.limit * -0.5 else true_value
+
+        # for price, volume in sell_orders:
+        #     if to_buy > 0 and price <= max_buy_price:
+        #         quantity = min(to_buy, -volume)
+        #         self.buy(price, quantity)
+        #         to_buy -= quantity
+
+        # if to_buy > 0:
+        #     popular_buy_price = max(buy_orders, key=lambda tup: tup[1])[0]
+        #     price = min(max_buy_price, popular_buy_price + 1)
+        #     self.buy(price, to_buy)
+
+        # for price, volume in buy_orders:
+        #     if to_sell > 0 and price >= min_sell_price:
+        #         quantity = min(to_sell, volume)
+        #         self.sell(price, quantity)
+        #         to_sell -= quantity
+
+        # if to_sell > 0:
+        #     popular_sell_price = min(sell_orders, key=lambda tup: tup[1])[0]
+        #     price = max(min_sell_price, popular_sell_price - 1)
+        #     self.sell(price, to_sell)
+
+    def save(self) -> JSON:
+        return list(self.prices)
+
+    def load(self, data: JSON) -> None:
+        self.prices = deque(data, maxlen=100)
+
+
 class RainforestStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         # return 10000
@@ -290,6 +695,7 @@ class RainforestStrategy(MarketMakingStrategy):
 class KelpStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         return round(self.get_mid_price(state, self.symbol))
+
 
 # class OrchidsStrategy(Strategy):
 #     def act(self, state: TradingState) -> None:
