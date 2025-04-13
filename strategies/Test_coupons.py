@@ -36,19 +36,17 @@ class Product:
         VOLCANIC_ROCK_VOUCHER_10500,
     ]
 
-# Paramètres
+# Paramètres (recalés d’après le code d’origine)
 PARAMS = {p: {
     "mean_volatility": 0.16,
     "threshold": 0.00163,
     "strike": int(p[-4:]),
     "starting_time_to_expiry": 0.98,
     "std_window": 6,
-    "zscore_threshold": 21,
-    "exit_zscore": 5,
+    "zscore_threshold": 7,
 } for p in Product.ALL_COUPONS}
 PARAMS[Product.VOLCANIC_ROCK_VOUCHER_10000]["mean_volatility"] = 0.1596
 
-# Black-Scholes simplifié
 class BlackScholes:
     @staticmethod
     def norm_cdf(x):
@@ -56,7 +54,7 @@ class BlackScholes:
 
     @staticmethod
     def black_scholes_call(spot, strike, tte, vol):
-        if spot <= 0 or strike <= 0 or tte <= 0 or vol <= 0:
+        if tte <= 0 or vol <= 0:
             return 0
         d1 = (log(spot / strike) + 0.5 * vol**2 * tte) / (vol * sqrt(tte))
         d2 = d1 - vol * sqrt(tte)
@@ -64,15 +62,13 @@ class BlackScholes:
 
     @staticmethod
     def delta(spot, strike, tte, vol):
-        if spot <= 0 or strike <= 0 or tte <= 0 or vol <= 0:
+        if tte <= 0 or vol <= 0:
             return 0
         d1 = (log(spot / strike) + 0.5 * vol**2 * tte) / (vol * sqrt(tte))
         return NormalDist().cdf(d1)
 
     @staticmethod
     def implied_volatility(call_price, spot, strike, tte, tol=1e-5, max_iter=100):
-        if spot <= 0 or strike <= 0 or tte <= 0:
-            return 0.16
         low, high = 0.01, 3.0
         for _ in range(max_iter):
             mid = (low + high) / 2
@@ -111,7 +107,8 @@ class Trader:
         traderData["under_mid"] = underlying_mid
 
         total_delta = 0
-        total_coupon_position = 0
+        underlying_pos = state.position.get(underlying_product, 0)
+        hedge_orders = []
 
         for coupon in Product.ALL_COUPONS:
             if coupon not in state.order_depths:
@@ -129,10 +126,8 @@ class Trader:
                 continue
 
             vol = BlackScholes.implied_volatility(coupon_mid, underlying_mid, params["strike"], tte)
-            if vol <= 0:
-                continue
-
             delta = BlackScholes.delta(underlying_mid, params["strike"], tte, vol)
+
             vols = traderData.setdefault(f"{coupon}_vols", [])
             vols.append(vol)
             if len(vols) > params["std_window"]:
@@ -141,12 +136,9 @@ class Trader:
                 continue
 
             vol_std = np.std(vols)
-            if vol_std == 0:
-                continue
-
-            z = (vol - params["mean_volatility"]) / vol_std
-
+            z = (vol - params["mean_volatility"]) / (vol_std if vol_std else 1e-9)
             orders = []
+
             if z >= params["zscore_threshold"]:
                 if od.buy_orders:
                     price = max(od.buy_orders)
@@ -159,8 +151,8 @@ class Trader:
                     qty = self.LIMIT[coupon] - abs(pos)
                     if qty > 0:
                         orders.append(Order(coupon, price, qty))
-            elif abs(z) <= params.get("exit_zscore", 5) and pos != 0:
-                # Prise de profit
+            else:
+                # Sortie de position (prise de profit ou neutralisation)
                 if pos > 0 and od.buy_orders:
                     price = max(od.buy_orders)
                     orders.append(Order(coupon, price, -pos))
@@ -171,20 +163,17 @@ class Trader:
             if orders:
                 result[coupon] = orders
 
-            total_coupon_position += pos
             total_delta += delta * pos
 
-        underlying_pos = state.position.get(underlying_product, 0)
         hedge_target = -int(total_delta)
         diff = hedge_target - underlying_pos
-        hedge_orders = []
 
-        if diff > 0 and underlying_od and underlying_od.sell_orders:
+        if diff > 0 and underlying_od.sell_orders:
             ask = min(underlying_od.sell_orders)
             vol = min(diff, -underlying_od.sell_orders[ask], self.LIMIT[underlying_product] - underlying_pos)
             if vol > 0:
                 hedge_orders.append(Order(underlying_product, ask, vol))
-        elif diff < 0 and underlying_od and underlying_od.buy_orders:
+        elif diff < 0 and underlying_od.buy_orders:
             bid = max(underlying_od.buy_orders)
             vol = min(abs(diff), underlying_od.buy_orders[bid], self.LIMIT[underlying_product] + underlying_pos)
             if vol > 0:
@@ -197,4 +186,5 @@ class Trader:
         logger.print("Delta net:", total_delta)
         logger.print("Hedge target:", hedge_target, "Underlying pos:", underlying_pos)
         logger.flush()
+
         return result, conversions, jsonpickle.encode(traderData)
