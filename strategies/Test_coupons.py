@@ -6,7 +6,7 @@ import math
 from math import log, sqrt
 from statistics import NormalDist
 
-# Logger pour affichage dans l'environnement de compétition
+# Logger obligatoire pour l'environnement
 class Logger:
     def __init__(self):
         self.logs = []
@@ -20,6 +20,7 @@ class Logger:
 
 logger = Logger()
 
+# Produits 
 class Product:
     VOLCANIC_ROCK = "VOLCANIC_ROCK"
     VOLCANIC_ROCK_VOUCHER_9500 = "VOLCANIC_ROCK_VOUCHER_9500"
@@ -35,19 +36,18 @@ class Product:
         VOLCANIC_ROCK_VOUCHER_10500,
     ]
 
-PARAMS = {
-    p: {
-        "mean_volatility": 0.16,
-        "strike": int(p[-4:]),
-        "starting_time_to_expiry": 0.98,
-        "std_window": 6,
-        "zscore_threshold": 21,
-        "zscore_close_threshold": 1,
-    }
-    for p in Product.ALL_COUPONS
-}
+# Paramètres
+PARAMS = {p: {
+    "mean_volatility": 0.16,
+    "threshold": 0.00163,
+    "strike": int(p[-4:]),
+    "starting_time_to_expiry": 0.98,
+    "std_window": 6,
+    "zscore_threshold": 21,
+} for p in Product.ALL_COUPONS}
 PARAMS[Product.VOLCANIC_ROCK_VOUCHER_10000]["mean_volatility"] = 0.1596
 
+# Black-Scholes simplifié
 class BlackScholes:
     @staticmethod
     def norm_cdf(x):
@@ -55,17 +55,23 @@ class BlackScholes:
 
     @staticmethod
     def black_scholes_call(spot, strike, tte, vol):
+        if vol <= 0 or tte <= 0:
+            return max(spot - strike, 0)
         d1 = (log(spot / strike) + 0.5 * vol**2 * tte) / (vol * sqrt(tte))
         d2 = d1 - vol * sqrt(tte)
         return spot * BlackScholes.norm_cdf(d1) - strike * BlackScholes.norm_cdf(d2)
 
     @staticmethod
     def delta(spot, strike, tte, vol):
+        if vol <= 0 or tte <= 0:
+            return 0
         d1 = (log(spot / strike) + 0.5 * vol**2 * tte) / (vol * sqrt(tte))
         return NormalDist().cdf(d1)
 
     @staticmethod
     def implied_volatility(call_price, spot, strike, tte, tol=1e-5, max_iter=100):
+        if call_price <= 0 or tte <= 0:
+            return 0.01
         low, high = 0.01, 3.0
         for _ in range(max_iter):
             mid = (low + high) / 2
@@ -118,6 +124,9 @@ class Trader:
 
             params = self.params[coupon]
             tte = params["starting_time_to_expiry"] - (state.timestamp / 1e6 / 250)
+            if tte <= 0:
+                continue
+
             vol = BlackScholes.implied_volatility(coupon_mid, underlying_mid, params["strike"], tte)
             delta = BlackScholes.delta(underlying_mid, params["strike"], tte, vol)
 
@@ -130,8 +139,8 @@ class Trader:
 
             vol_std = np.std(vols)
             z = (vol - params["mean_volatility"]) / (vol_std if vol_std else 1e-9)
-            orders = []
 
+            orders = []
             if z >= params["zscore_threshold"]:
                 if od.buy_orders:
                     price = max(od.buy_orders)
@@ -144,14 +153,14 @@ class Trader:
                     qty = self.LIMIT[coupon] - abs(pos)
                     if qty > 0:
                         orders.append(Order(coupon, price, qty))
-            elif abs(z) <= params["zscore_close_threshold"] and pos != 0:
-                # Sortie de position
+            else:
+                # STRATÉGIE DE SORTIE : revenir vers 0
                 if pos > 0 and od.buy_orders:
-                    best_bid = max(od.buy_orders)
-                    orders.append(Order(coupon, best_bid, -pos))
+                    price = max(od.buy_orders)
+                    orders.append(Order(coupon, price, -pos))
                 elif pos < 0 and od.sell_orders:
-                    best_ask = min(od.sell_orders)
-                    orders.append(Order(coupon, best_ask, -pos))
+                    price = min(od.sell_orders)
+                    orders.append(Order(coupon, price, -pos))
 
             if orders:
                 result[coupon] = orders
