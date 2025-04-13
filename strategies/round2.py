@@ -737,7 +737,7 @@ class KelpStrategy(MarketMakingStrategy):
 class PicnicBasketStrategy(SignalStrategy):
     # Class-level default thresholds
     DEFAULT_THRESHOLDS = {
-        "CROISSANTS": {"long": 20, "short": 150},
+        "CROISSANTS": {"long": 30, "short": 150},
         "JAMS": {"long": 0, "short": 150},
         "DJEMBES": {"long": 130, "short": 220},
         "PICNIC_BASKET1": {"long": 60, "short": 130},
@@ -864,47 +864,16 @@ class Trader:
             "PICNIC_BASKET2": 100,
         }
 
-        # Parse command line arguments for thresholds
-        self.parse_args()
-
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
             "RAINFOREST_RESIN": RainforestStrategy,
             "KELP": KelpStrategy,
             # "SQUID_INK": SquidinkStrategy,
-            "CROISSANTS": PicnicBasketStrategy,
-            "JAMS": PicnicBasketStrategy,
-            "DJEMBES": PicnicBasketStrategy,
+            # "CROISSANTS": PicnicBasketStrategy,
+            # "JAMS": PicnicBasketStrategy,
+            # "DJEMBES": PicnicBasketStrategy,
             "PICNIC_BASKET1": PicnicBasketStrategy,
             "PICNIC_BASKET2": PicnicBasketStrategy,
         }.items()}
-
-    def parse_args(self):
-        # Only parse arguments if running as main script
-        if len(sys.argv) > 1 and sys.argv[1].isdigit():
-            # Skip if being called by backtester with round number only
-            return
-
-        parser = argparse.ArgumentParser(description='Trading strategy with configurable thresholds')
-
-        # Add threshold arguments for each asset
-        for symbol in ["CROISSANTS", "JAMS", "DJEMBES", "PICNIC_BASKET1", "PICNIC_BASKET2"]:
-            parser.add_argument(f'--{symbol.lower()}-long', type=int,
-                                help=f'Long threshold for {symbol}')
-            parser.add_argument(f'--{symbol.lower()}-short', type=int,
-                                help=f'Short threshold for {symbol}')
-
-        # Parse arguments, ignoring any unknown args (which might come from the backtester)
-        args, _ = parser.parse_known_args()
-
-        # Update thresholds based on arguments
-        for symbol in ["CROISSANTS", "JAMS", "DJEMBES", "PICNIC_BASKET1", "PICNIC_BASKET2"]:
-            arg_long = getattr(args, f"{symbol.lower()}_long")
-            arg_short = getattr(args, f"{symbol.lower()}_short")
-
-            if arg_long is not None:
-                PicnicBasketStrategy.THRESHOLDS[symbol]["long"] = arg_long
-            if arg_short is not None:
-                PicnicBasketStrategy.THRESHOLDS[symbol]["short"] = arg_short
 
     def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:
         orders = {}
