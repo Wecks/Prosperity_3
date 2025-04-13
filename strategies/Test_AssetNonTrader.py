@@ -1,23 +1,25 @@
+from datamodel import OrderDepth, UserId, TradingState, Order, ConversionObservation
 from typing import List
 import jsonpickle
-from datamodel import OrderDepth, UserId, TradingState, Order, ConversionObservation
 import numpy as np
 import math
 
 
 class Product:
-
-
     RAINFOREST_RESIN = "RAINFOREST_RESIN"
     KELP = "KELP" 
     SQUID_INK = "SQUID_INK" 
     PICNIC_BASKET1 = "PICNIC_BASKET1" 
     PICNIC_BASKET2 = "PICNIC_BASKET2"
     CROISSANTS = "CROISSANTS" 
-    CROISSANT = "CROISSANT"
+    JAMS = "JAMS"
 
 
-PARAMS = {Product.CROISSANT: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
+
+
+PARAMS = {
+    Product.SQUID_INK: {"take_orders_with_min_volume": 0, "take_orders_with_max_volume": 35}
+}
 
 
 class Trader:
@@ -26,7 +28,7 @@ class Trader:
             params = PARAMS
         self.params = params
 
-        self.LIMIT = {Product.CROISSANT: 60}
+        self.LIMIT = {Product.SQUID_INK: 60}
 
     def run(self, state: TradingState):
         traderObject = {}
@@ -36,48 +38,42 @@ class Trader:
         result = {}
         conversions = 0
 
-        if (
-            Product.CROISSANT in self.params
-            and Product.CROISSANT in state.order_depths
-        ):
-            basket_params = self.params[Product.CROISSANT]
-            basket_limit = self.LIMIT[Product.CROISSANT]
+        if Product.SQUID_INK in self.params and Product.SQUID_INK in state.order_depths:
+            SQUID_INK_params = self.params[Product.SQUID_INK]
+            SQUID_INK_limit = self.LIMIT[Product.SQUID_INK]
 
-            basket_position = (
-                state.position[Product.CROISSANT]
-                if Product.CROISSANT in state.position
-                else 0
+            SQUID_INK_position = (
+                state.position[Product.SQUID_INK] if Product.SQUID_INK in state.position else 0
             )
 
-            basket_order_depth = state.order_depths[Product.CROISSANT]
+            SQUID_INK_order_depth = state.order_depths[Product.SQUID_INK]
 
-            mm_bids = [
-                level
-                for level in basket_order_depth.buy_orders.keys()
-                if abs(basket_order_depth.buy_orders[level]) >= basket_params["mm_min_volume"]
-            ]
-            mm_asks = [
-                level
-                for level in basket_order_depth.sell_orders.keys()
-                if abs(basket_order_depth.sell_orders[level]) >= basket_params["mm_min_volume"]
-            ]
-            if len(mm_bids) > 0 and len(mm_asks) > 0:
-                best_mm_bid = max(mm_bids)
-                best_mm_ask = min(mm_asks)
-                # truncate
-                mm_mid = int((best_mm_bid + best_mm_ask)/2)
+            best_bid = max(SQUID_INK_order_depth.buy_orders.keys())
+            best_bid_volume = SQUID_INK_order_depth.buy_orders[best_bid]
 
-                num_levels = basket_params['max_width'] - basket_params['min_width'] + 1
-                num_buy_levels = min(num_levels, basket_limit - basket_position)
-                num_sell_levels = min(num_levels, basket_limit + basket_position)
+            best_ask = min(SQUID_INK_order_depth.sell_orders.keys())
+            best_ask_volume = abs(SQUID_INK_order_depth.sell_orders[best_ask])
 
-                basket_orders = []
-                for level in range(1, num_buy_levels + 1):
-                    basket_orders.append(Order(Product.CROISSANT, mm_mid - level, 1))
-                for level in range(1, num_sell_levels + 1):
-                    basket_orders.append(Order(Product.CROISSANT, mm_mid + level, -1))
-                
-                result[Product.CROISSANT] = basket_orders
+            SQUID_INK_orders = []
+            if (
+                best_bid_volume >= SQUID_INK_params["take_orders_with_min_volume"]
+                and best_bid_volume <= SQUID_INK_params["take_orders_with_max_volume"]
+            ):
+                # sell to best bid
+                trade_volume = min(best_bid_volume, SQUID_INK_limit + SQUID_INK_position)
+                if trade_volume > 0:
+                    SQUID_INK_orders.append(Order(Product.SQUID_INK, best_bid, -1* trade_volume))
+            elif (
+                best_ask_volume >= SQUID_INK_params["take_orders_with_min_volume"]
+                and best_ask_volume <= SQUID_INK_params["take_orders_with_max_volume"]
+            ):
+                # buy from best ask
+                trade_volume = min(best_ask_volume, SQUID_INK_limit - SQUID_INK_position)
+                if trade_volume > 0: 
+                    SQUID_INK_orders.append(Order(Product.SQUID_INK, best_ask, trade_volume))
+
+            result[Product.SQUID_INK] = SQUID_INK_orders
+
         traderData = jsonpickle.encode(traderObject)
 
         return result, conversions, traderData
