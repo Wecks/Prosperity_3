@@ -14,10 +14,10 @@ class Product:
     PICNIC_BASKET1 = "PICNIC_BASKET1" 
     PICNIC_BASKET2 = "PICNIC_BASKET2"
     CROISSANTS = "CROISSANTS" 
-    JAMS = "JAMS"
+    CROISSANT = "CROISSANT"
 
 
-PARAMS = {Product.JAMS: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
+PARAMS = {Product.CROISSANT: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
 
 
 class Trader:
@@ -26,7 +26,7 @@ class Trader:
             params = PARAMS
         self.params = params
 
-        self.LIMIT = {Product.JAMS: 60}
+        self.LIMIT = {Product.CROISSANT: 60}
 
     def run(self, state: TradingState):
         traderObject = {}
@@ -37,19 +37,19 @@ class Trader:
         conversions = 0
 
         if (
-            Product.JAMS in self.params
-            and Product.JAMS in state.order_depths
+            Product.CROISSANT in self.params
+            and Product.CROISSANT in state.order_depths
         ):
-            basket_params = self.params[Product.JAMS]
-            basket_limit = self.LIMIT[Product.JAMS]
+            basket_params = self.params[Product.CROISSANT]
+            basket_limit = self.LIMIT[Product.CROISSANT]
 
             basket_position = (
-                state.position[Product.JAMS]
-                if Product.JAMS in state.position
+                state.position[Product.CROISSANT]
+                if Product.CROISSANT in state.position
                 else 0
             )
 
-            basket_order_depth = state.order_depths[Product.JAMS]
+            basket_order_depth = state.order_depths[Product.CROISSANT]
 
             mm_bids = [
                 level
@@ -73,11 +73,11 @@ class Trader:
 
                 basket_orders = []
                 for level in range(1, num_buy_levels + 1):
-                    basket_orders.append(Order(Product.JAMS, mm_mid - level, 1))
+                    basket_orders.append(Order(Product.CROISSANT, mm_mid - level, 1))
                 for level in range(1, num_sell_levels + 1):
-                    basket_orders.append(Order(Product.JAMS, mm_mid + level, -1))
+                    basket_orders.append(Order(Product.CROISSANT, mm_mid + level, -1))
                 
-                result[Product.JAMS] = basket_orders
+                result[Product.CROISSANT] = basket_orders
         traderData = jsonpickle.encode(traderObject)
 
         return result, conversions, traderData
