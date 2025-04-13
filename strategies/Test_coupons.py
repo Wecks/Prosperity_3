@@ -1,20 +1,72 @@
-from datamodel import OrderDepth, TradingState, Order
+from datamodel import OrderDepth, TradingState, Order, Symbol
 from typing import List, Dict, Any
 import jsonpickle
 import numpy as np
 from math import log, sqrt
 from statistics import NormalDist
+import json
 
+# Logger officiel du visualizer
 class Logger:
-    def __init__(self):
-        self.logs = []
+    def __init__(self) -> None:
+        self.logs = ""
+        self.max_log_length = 3750
 
-    def print(self, *args, **kwargs):
-        message = " ".join(str(a) for a in args)
-        self.logs.append(message)
+    def print(self, *objects: Any, sep: str = " ", end: str = "\n") -> None:
+        self.logs += sep.join(map(str, objects)) + end
 
-    def flush(self):
-        print("LOGGER:" + "\n".join(self.logs))
+    def flush(self, state: TradingState, orders: dict[Symbol, list[Order]], conversions: int, trader_data: str) -> None:
+        base_length = len(self.to_json([
+            self.compress_state(state, ""),
+            self.compress_orders(orders),
+            conversions,
+            "",
+            "",
+        ]))
+
+        max_item_length = (self.max_log_length - base_length) // 3
+
+        print(self.to_json([
+            self.compress_state(state, self.truncate(state.traderData, max_item_length)),
+            self.compress_orders(orders),
+            conversions,
+            self.truncate(trader_data, max_item_length),
+            self.truncate(self.logs, max_item_length),
+        ]))
+
+        self.logs = ""
+
+    def compress_state(self, state: TradingState, trader_data: str) -> list[Any]:
+        return [
+            state.timestamp,
+            trader_data,
+            [[l.symbol, l.product, l.denomination] for l in state.listings.values()],
+            {symbol: [od.buy_orders, od.sell_orders] for symbol, od in state.order_depths.items()},
+            [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp] for arr in state.own_trades.values() for t in arr],
+            [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp] for arr in state.market_trades.values() for t in arr],
+            state.position,
+            [state.observations.plainValueObservations, {
+                p: [
+                    o.bidPrice,
+                    o.askPrice,
+                    o.transportFees,
+                    o.exportTariff,
+                    o.importTariff,
+                    o.sugarPrice,
+                    o.sunlightIndex,
+                ] for p, o in state.observations.conversionObservations.items()
+            }],
+        ]
+
+    def compress_orders(self, orders: dict[Symbol, list[Order]]) -> list[list[Any]]:
+        return [[o.symbol, o.price, o.quantity] for arr in orders.values() for o in arr]
+
+    def to_json(self, value: Any) -> str:
+        from datamodel import ProsperityEncoder
+        return json.dumps(value, cls=ProsperityEncoder, separators=(",", ":"))
+
+    def truncate(self, value: str, max_length: int) -> str:
+        return value if len(value) <= max_length else value[: max_length - 3] + "..."
 
 logger = Logger()
 
@@ -55,7 +107,7 @@ class BlackScholes:
     @staticmethod
     def implied_volatility(call_price, spot, strike, tte, max_iter=100, tol=1e-8):
         if call_price <= 0 or spot <= 0 or strike <= 0 or tte <= 1e-6:
-            return 0.2  # fallback
+            return 0.2
         low, high = 0.01, 1.0
         for _ in range(max_iter):
             mid = (low + high) / 2
@@ -117,6 +169,9 @@ class Trader:
                 continue
 
             vol = BlackScholes.implied_volatility(mid_price, under_mid, params["strike"], tte)
+            if vol <= 0.0101:
+                continue
+
             vols = traderData.setdefault(f"{coupon}_vols", [])
             vols.append(vol)
             if len(vols) > params["std_window"]:
@@ -126,6 +181,7 @@ class Trader:
 
             vol_std = np.std(vols)
             zscore = (vol - params["mean_volatility"]) / (vol_std if vol_std > 1e-6 else 1e-6)
+            zscore = max(min(zscore, 10), -10)
 
             logger.print(f"{coupon} | vol: {vol:.4f} | z-score: {zscore:.2f} | mid: {mid_price:.2f}")
 
@@ -188,5 +244,6 @@ class Trader:
             if hedge_orders:
                 result[underlying] = hedge_orders
 
-        logger.flush()
-        return result, conversions, jsonpickle.encode(traderData)
+        trader_data = jsonpickle.encode(traderData)
+        logger.flush(state, result, conversions, trader_data)
+        return result, conversions, trader_data
