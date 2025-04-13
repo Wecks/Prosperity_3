@@ -187,7 +187,7 @@ class Trader:
 
             # Calcul du z-score (avec clipping pour éviter des valeurs extrêmes)
             vol_std = np.std(vols)
-            if vol_std < 0.0005:
+            if vol_std < 0.0001:
                 logger.print(f"[SKIP] {coupon} | Vol_std trop faible: {vol_std:.6f} → pas de trade")
                 continue
             zscore = (vol - params["mean_volatility"]) / (vol_std if vol_std > 1e-6 else 1e-6)
