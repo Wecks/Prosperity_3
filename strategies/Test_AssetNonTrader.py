@@ -8,7 +8,7 @@ import math
 class Product:
     RAINFOREST_RESIN = "RAINFOREST_RESIN"
     KELP = "KELP" 
-    SQUID_INK = "SQUID_INK" 
+    CROISSANTS = "CROISSANTS" 
     PICNIC_BASKET1 = "PICNIC_BASKET1" 
     PICNIC_BASKET2 = "PICNIC_BASKET2"
     CROISSANTS = "CROISSANTS" 
@@ -18,7 +18,7 @@ class Product:
 
 
 PARAMS = {
-    Product.SQUID_INK: {"take_orders_with_min_volume": 0, "take_orders_with_max_volume": 35}
+    Product.CROISSANTS: {"take_orders_with_min_volume": 0, "take_orders_with_max_volume": 35}
 }
 
 
@@ -28,7 +28,7 @@ class Trader:
             params = PARAMS
         self.params = params
 
-        self.LIMIT = {Product.SQUID_INK: 60}
+        self.LIMIT = {Product.CROISSANTS: 60}
 
     def run(self, state: TradingState):
         traderObject = {}
@@ -38,41 +38,41 @@ class Trader:
         result = {}
         conversions = 0
 
-        if Product.SQUID_INK in self.params and Product.SQUID_INK in state.order_depths:
-            SQUID_INK_params = self.params[Product.SQUID_INK]
-            SQUID_INK_limit = self.LIMIT[Product.SQUID_INK]
+        if Product.CROISSANTS in self.params and Product.CROISSANTS in state.order_depths:
+            CROISSANTS_params = self.params[Product.CROISSANTS]
+            CROISSANTS_limit = self.LIMIT[Product.CROISSANTS]
 
-            SQUID_INK_position = (
-                state.position[Product.SQUID_INK] if Product.SQUID_INK in state.position else 0
+            CROISSANTS_position = (
+                state.position[Product.CROISSANTS] if Product.CROISSANTS in state.position else 0
             )
 
-            SQUID_INK_order_depth = state.order_depths[Product.SQUID_INK]
+            CROISSANTS_order_depth = state.order_depths[Product.CROISSANTS]
 
-            best_bid = max(SQUID_INK_order_depth.buy_orders.keys())
-            best_bid_volume = SQUID_INK_order_depth.buy_orders[best_bid]
+            best_bid = max(CROISSANTS_order_depth.buy_orders.keys())
+            best_bid_volume = CROISSANTS_order_depth.buy_orders[best_bid]
 
-            best_ask = min(SQUID_INK_order_depth.sell_orders.keys())
-            best_ask_volume = abs(SQUID_INK_order_depth.sell_orders[best_ask])
+            best_ask = min(CROISSANTS_order_depth.sell_orders.keys())
+            best_ask_volume = abs(CROISSANTS_order_depth.sell_orders[best_ask])
 
-            SQUID_INK_orders = []
+            CROISSANTS_orders = []
             if (
-                best_bid_volume >= SQUID_INK_params["take_orders_with_min_volume"]
-                and best_bid_volume <= SQUID_INK_params["take_orders_with_max_volume"]
+                best_bid_volume >= CROISSANTS_params["take_orders_with_min_volume"]
+                and best_bid_volume <= CROISSANTS_params["take_orders_with_max_volume"]
             ):
                 # sell to best bid
-                trade_volume = min(best_bid_volume, SQUID_INK_limit + SQUID_INK_position)
+                trade_volume = min(best_bid_volume, CROISSANTS_limit + CROISSANTS_position)
                 if trade_volume > 0:
-                    SQUID_INK_orders.append(Order(Product.SQUID_INK, best_bid, -1* trade_volume))
+                    CROISSANTS_orders.append(Order(Product.CROISSANTS, best_bid, -1* trade_volume))
             elif (
-                best_ask_volume >= SQUID_INK_params["take_orders_with_min_volume"]
-                and best_ask_volume <= SQUID_INK_params["take_orders_with_max_volume"]
+                best_ask_volume >= CROISSANTS_params["take_orders_with_min_volume"]
+                and best_ask_volume <= CROISSANTS_params["take_orders_with_max_volume"]
             ):
                 # buy from best ask
-                trade_volume = min(best_ask_volume, SQUID_INK_limit - SQUID_INK_position)
+                trade_volume = min(best_ask_volume, CROISSANTS_limit - CROISSANTS_position)
                 if trade_volume > 0: 
-                    SQUID_INK_orders.append(Order(Product.SQUID_INK, best_ask, trade_volume))
+                    CROISSANTS_orders.append(Order(Product.CROISSANTS, best_ask, trade_volume))
 
-            result[Product.SQUID_INK] = SQUID_INK_orders
+            result[Product.CROISSANTS] = CROISSANTS_orders
 
         traderData = jsonpickle.encode(traderObject)
 
