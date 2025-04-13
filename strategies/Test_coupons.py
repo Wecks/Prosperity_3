@@ -6,7 +6,7 @@ import math
 from math import log, sqrt
 from statistics import NormalDist
 
-# Logger obligatoire pour l'environnement
+# Logger utilisé par le simulateur
 class Logger:
     def __init__(self):
         self.logs = []
@@ -20,7 +20,7 @@ class Logger:
 
 logger = Logger()
 
-# Produits 
+# Définition des produits
 class Product:
     VOLCANIC_ROCK = "VOLCANIC_ROCK"
     VOLCANIC_ROCK_VOUCHER_9500 = "VOLCANIC_ROCK_VOUCHER_9500"
@@ -36,16 +36,44 @@ class Product:
         VOLCANIC_ROCK_VOUCHER_10500,
     ]
 
-# Paramètres (recalés d’après le code d’origine)
-PARAMS = {p: {
-    "mean_volatility": 0.16,
-    "threshold": 0.00163,
-    "strike": int(p[-4:]),
-    "starting_time_to_expiry": 0.98,
-    "std_window": 6,
-    "zscore_threshold": 7,
-} for p in Product.ALL_COUPONS}
-PARAMS[Product.VOLCANIC_ROCK_VOUCHER_10000]["mean_volatility"] = 0.1596
+# Paramètres tirés du code de base
+PARAMS = {
+    Product.VOLCANIC_ROCK_VOUCHER_9500: {
+        "mean_volatility": 0.16,
+        "strike": 9500,
+        "starting_time_to_expiry": 0.98,
+        "std_window": 6,
+        "zscore_threshold": 3.0,
+    },
+    Product.VOLCANIC_ROCK_VOUCHER_9750: {
+        "mean_volatility": 0.16,
+        "strike": 9750,
+        "starting_time_to_expiry": 0.98,
+        "std_window": 6,
+        "zscore_threshold": 3.0,
+    },
+    Product.VOLCANIC_ROCK_VOUCHER_10000: {
+        "mean_volatility": 0.1596,
+        "strike": 10000,
+        "starting_time_to_expiry": 0.98,
+        "std_window": 6,
+        "zscore_threshold": 3.0,
+    },
+    Product.VOLCANIC_ROCK_VOUCHER_10250: {
+        "mean_volatility": 0.16,
+        "strike": 10250,
+        "starting_time_to_expiry": 0.98,
+        "std_window": 6,
+        "zscore_threshold": 3.0,
+    },
+    Product.VOLCANIC_ROCK_VOUCHER_10500: {
+        "mean_volatility": 0.16,
+        "strike": 10500,
+        "starting_time_to_expiry": 0.98,
+        "std_window": 6,
+        "zscore_threshold": 3.0,
+    },
+}
 
 class BlackScholes:
     @staticmethod
@@ -54,7 +82,7 @@ class BlackScholes:
 
     @staticmethod
     def black_scholes_call(spot, strike, tte, vol):
-        if tte <= 0 or vol <= 0:
+        if vol <= 0 or tte <= 0 or spot <= 0 or strike <= 0:
             return 0
         d1 = (log(spot / strike) + 0.5 * vol**2 * tte) / (vol * sqrt(tte))
         d2 = d1 - vol * sqrt(tte)
@@ -62,13 +90,15 @@ class BlackScholes:
 
     @staticmethod
     def delta(spot, strike, tte, vol):
-        if tte <= 0 or vol <= 0:
+        if vol <= 0 or tte <= 0 or spot <= 0 or strike <= 0:
             return 0
         d1 = (log(spot / strike) + 0.5 * vol**2 * tte) / (vol * sqrt(tte))
         return NormalDist().cdf(d1)
 
     @staticmethod
     def implied_volatility(call_price, spot, strike, tte, tol=1e-5, max_iter=100):
+        if call_price <= 0 or spot <= 0 or strike <= 0 or tte <= 0:
+            return 0.2
         low, high = 0.01, 3.0
         for _ in range(max_iter):
             mid = (low + high) / 2
@@ -90,7 +120,7 @@ class Trader:
         }
 
     def get_mid_price(self, order_depth: OrderDepth, fallback: float) -> float:
-        if order_depth.buy_orders and order_depth.sell_orders:
+        if order_depth and order_depth.buy_orders and order_depth.sell_orders:
             bid = max(order_depth.buy_orders.keys())
             ask = min(order_depth.sell_orders.keys())
             return (bid + ask) / 2
@@ -101,14 +131,13 @@ class Trader:
         result: Dict[str, List[Order]] = {}
         conversions = 0
 
-        underlying_product = Product.VOLCANIC_ROCK
-        underlying_od = state.order_depths.get(underlying_product)
-        underlying_mid = self.get_mid_price(underlying_od, traderData.get("under_mid", 10000))
-        traderData["under_mid"] = underlying_mid
+        underlying = Product.VOLCANIC_ROCK
+        under_od = state.order_depths.get(underlying)
+        under_mid = self.get_mid_price(under_od, traderData.get("under_mid", 10000))
+        traderData["under_mid"] = under_mid
 
         total_delta = 0
-        underlying_pos = state.position.get(underlying_product, 0)
-        hedge_orders = []
+        under_pos = state.position.get(underlying, 0)
 
         for coupon in Product.ALL_COUPONS:
             if coupon not in state.order_depths:
@@ -116,29 +145,28 @@ class Trader:
 
             od = state.order_depths[coupon]
             pos = state.position.get(coupon, 0)
-            fallback_price = traderData.get(f"{coupon}_prev_price", 100)
-            coupon_mid = self.get_mid_price(od, fallback_price)
-            traderData[f"{coupon}_prev_price"] = coupon_mid
+            fallback = traderData.get(f"{coupon}_prev_price", 100)
+            mid = self.get_mid_price(od, fallback)
+            traderData[f"{coupon}_prev_price"] = mid
 
             params = self.params[coupon]
             tte = params["starting_time_to_expiry"] - (state.timestamp / 1e6 / 250)
-            if tte <= 0:
+            if tte <= 0 or under_mid <= 0 or mid <= 0:
+                logger.print(f"⛔ Skip {coupon}: bad tte/mid")
                 continue
 
-            vol = BlackScholes.implied_volatility(coupon_mid, underlying_mid, params["strike"], tte)
-            delta = BlackScholes.delta(underlying_mid, params["strike"], tte, vol)
-
-            vols = traderData.setdefault(f"{coupon}_vols", [])
-            vols.append(vol)
-            if len(vols) > params["std_window"]:
-                vols.pop(0)
-            if len(vols) < params["std_window"]:
+            vol = BlackScholes.implied_volatility(mid, under_mid, params["strike"], tte)
+            delta = BlackScholes.delta(under_mid, params["strike"], tte, vol)
+            traderData.setdefault(f"{coupon}_vols", []).append(vol)
+            if len(traderData[f"{coupon}_vols"]) > params["std_window"]:
+                traderData[f"{coupon}_vols"].pop(0)
+            if len(traderData[f"{coupon}_vols"]) < params["std_window"]:
                 continue
 
-            vol_std = np.std(vols)
-            z = (vol - params["mean_volatility"]) / (vol_std if vol_std else 1e-9)
+            vol_std = np.std(traderData[f"{coupon}_vols"])
+            z = (vol - params["mean_volatility"]) / (vol_std or 1e-9)
+
             orders = []
-
             if z >= params["zscore_threshold"]:
                 if od.buy_orders:
                     price = max(od.buy_orders)
@@ -151,14 +179,10 @@ class Trader:
                     qty = self.LIMIT[coupon] - abs(pos)
                     if qty > 0:
                         orders.append(Order(coupon, price, qty))
-            else:
-                # Sortie de position (prise de profit ou neutralisation)
-                if pos > 0 and od.buy_orders:
-                    price = max(od.buy_orders)
-                    orders.append(Order(coupon, price, -pos))
-                elif pos < 0 and od.sell_orders:
-                    price = min(od.sell_orders)
-                    orders.append(Order(coupon, price, -pos))
+            elif abs(z) < 1 and pos != 0:
+                # Sortie de position si le z-score s'est normalisé
+                price = min(od.sell_orders) if pos > 0 else max(od.buy_orders)
+                orders.append(Order(coupon, price, -pos))
 
             if orders:
                 result[coupon] = orders
@@ -166,25 +190,26 @@ class Trader:
             total_delta += delta * pos
 
         hedge_target = -int(total_delta)
-        diff = hedge_target - underlying_pos
+        diff = hedge_target - under_pos
+        hedge_orders = []
 
-        if diff > 0 and underlying_od.sell_orders:
-            ask = min(underlying_od.sell_orders)
-            vol = min(diff, -underlying_od.sell_orders[ask], self.LIMIT[underlying_product] - underlying_pos)
+        if diff > 0 and under_od.sell_orders:
+            ask = min(under_od.sell_orders)
+            vol = min(diff, -under_od.sell_orders[ask], self.LIMIT[underlying] - under_pos)
             if vol > 0:
-                hedge_orders.append(Order(underlying_product, ask, vol))
-        elif diff < 0 and underlying_od.buy_orders:
-            bid = max(underlying_od.buy_orders)
-            vol = min(abs(diff), underlying_od.buy_orders[bid], self.LIMIT[underlying_product] + underlying_pos)
+                hedge_orders.append(Order(underlying, ask, vol))
+        elif diff < 0 and under_od.buy_orders:
+            bid = max(under_od.buy_orders)
+            vol = min(abs(diff), under_od.buy_orders[bid], self.LIMIT[underlying] + under_pos)
             if vol > 0:
-                hedge_orders.append(Order(underlying_product, bid, -vol))
+                hedge_orders.append(Order(underlying, bid, -vol))
 
         if hedge_orders:
-            result[underlying_product] = hedge_orders
+            result[underlying] = hedge_orders
 
-        logger.print("Underlying mid:", underlying_mid)
-        logger.print("Delta net:", total_delta)
-        logger.print("Hedge target:", hedge_target, "Underlying pos:", underlying_pos)
+        logger.print("✅ RUN")
+        logger.print("Delta total:", total_delta)
+        logger.print("Target hedge:", hedge_target, "Current:", under_pos)
         logger.flush()
 
         return result, conversions, jsonpickle.encode(traderData)
