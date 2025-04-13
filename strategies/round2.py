@@ -1,7 +1,5 @@
 import json
 import math
-import sys
-import argparse
 from abc import abstractmethod
 from collections import deque
 from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder, Symbol, Trade, TradingState
@@ -735,22 +733,6 @@ class KelpStrategy(MarketMakingStrategy):
 #             return Signal.SHORT
 
 class PicnicBasketStrategy(SignalStrategy):
-    # Class-level default thresholds
-    DEFAULT_THRESHOLDS = {
-        "CROISSANTS": {"long": 30, "short": 150},
-        "JAMS": {"long": 0, "short": 150},
-        "DJEMBES": {"long": 130, "short": 220},
-        "PICNIC_BASKET1": {"long": 60, "short": 130},
-        "PICNIC_BASKET2": {"long": 40, "short": 110}
-    }
-
-    # Override class-level thresholds with values from command line
-    THRESHOLDS = DEFAULT_THRESHOLDS.copy()
-
-    def __init__(self, symbol: Symbol, limit: int) -> None:
-        super().__init__(symbol, limit)
-        # Each instance will use the class-level thresholds
-
     def get_signal(self, state: TradingState) -> Signal | None:
         if any(symbol not in state.order_depths for symbol in ["CROISSANTS", "JAMS", "DJEMBES", "PICNIC_BASKET1", "PICNIC_BASKET2"]):
             return
@@ -764,21 +746,45 @@ class PicnicBasketStrategy(SignalStrategy):
         diff = {
             "PICNIC_BASKET1": picnic_basket1 - 6 * croissants - 3 * jams - djembes,
             "PICNIC_BASKET2": picnic_basket2 - 4 * croissants - 2 * jams,
-            "CROISSANTS": picnic_basket1 - 6 * croissants - 3 * jams - djembes,  # Using basket1 for CROISSANTS
-            "JAMS": picnic_basket1 - 6 * croissants - 3 * jams - djembes,        # Using basket1 for JAMS
-            "DJEMBES": picnic_basket1 - 6 * croissants - 3 * jams - djembes,     # Using basket1 for DJEMBES
         }[self.symbol]
+        #! Other diff to be done ? Compare the 2 backets prices ? The diff of the 2 backets prices ?
 
-        # Get thresholds for this symbol
-        long_threshold = PicnicBasketStrategy.THRESHOLDS[self.symbol]["long"]
-        short_threshold = PicnicBasketStrategy.THRESHOLDS[self.symbol]["short"]
+        # if diff < 260:
+        #     return Signal.LONG
+        # elif diff > 355:
+        #     return Signal.SHORT
+
+        #! FIXME : OUTDATED NUMBERS, needs to find what fit us.
+        long_threshold, short_threshold = {
+            "CROISSANTS": (30, 150),
+            "JAMS": (0, 150),
+            "DJEMBES": (130, 220),
+            "PICNIC_BASKET1": (60, 130),
+            "PICNIC_BASKET2": (40, 110),
+        }[self.symbol]
 
         if diff < long_threshold:
             return Signal.LONG
         elif diff > short_threshold:
             return Signal.SHORT
 
-        return None
+        # premium, threshold = {
+        #     "CROISSANTS": (285, 0.19),
+        #     "JAMS": (340, 0.43),
+        #     "DJEMBES": (350, 0.05),
+        #     "PICNIC_BASKET1": (325, 0.12),
+        #     "PICNIC_BASKET2": (325, 0.12),
+        # }[self.symbol]
+
+        # if diff < premium * (1.0 - threshold):
+        #     return Signal.LONG
+        # elif diff > premium * (1.0 + threshold):
+        #     return Signal.SHORT
+
+        # if diff < 355 * 0.9:
+        #     return Signal.LONG
+        # elif diff > 355 * 1.1:
+        #     return Signal.SHORT
 
 
 # class CoconutStrategy(SignalStrategy):
