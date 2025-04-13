@@ -15,3 +15,14 @@ Optimiser la stratégie avec des prises de position en mean reversion :
 Faire la moyenne bid / ask et acheter tous les lots ask qui sont en dessous de la moyenne et vendre tous les lots bid qui sont au dessus. --> Cela permettra plus de flexibilité si le prix varie legerement dans le temps
 
 ## Squid Ink
+
+
+
+## Basket Optimization
+
+Thresholds long / short
+basket1 -> (40,110)
+basket2 -> (60,130)
+croissants -> (20,150)
+jams -> (0,150)
+djembes -> (130,220)

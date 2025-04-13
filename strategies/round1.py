@@ -284,8 +284,8 @@ class MarketMakingStrategy(Strategy):
 
 class RainforestStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
-        # return 10000
-        return round(self.get_mid_price(state, self.symbol)) #More Flexible but a bit less performant in backtest - Same performance in live round2
+        return 10000
+        # return round(self.get_mid_price(state, self.symbol)) #More Flexible but a bit less performant in backtest - Same performance in live round2
 
 class KelpStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
