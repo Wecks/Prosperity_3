@@ -17,7 +17,7 @@ class Product:
     JAMS = "JAMS"
 
 
-PARAMS = {Product.GIFT_BASKET: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
+PARAMS = {Product.JAMS: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
 
 
 class Trader:
@@ -26,7 +26,7 @@ class Trader:
             params = PARAMS
         self.params = params
 
-        self.LIMIT = {Product.GIFT_BASKET: 60}
+        self.LIMIT = {Product.JAMS: 60}
 
     def run(self, state: TradingState):
         traderObject = {}
@@ -37,19 +37,19 @@ class Trader:
         conversions = 0
 
         if (
-            Product.GIFT_BASKET in self.params
-            and Product.GIFT_BASKET in state.order_depths
+            Product.JAMS in self.params
+            and Product.JAMS in state.order_depths
         ):
-            basket_params = self.params[Product.GIFT_BASKET]
-            basket_limit = self.LIMIT[Product.GIFT_BASKET]
+            basket_params = self.params[Product.JAMS]
+            basket_limit = self.LIMIT[Product.JAMS]
 
             basket_position = (
-                state.position[Product.GIFT_BASKET]
-                if Product.GIFT_BASKET in state.position
+                state.position[Product.JAMS]
+                if Product.JAMS in state.position
                 else 0
             )
 
-            basket_order_depth = state.order_depths[Product.GIFT_BASKET]
+            basket_order_depth = state.order_depths[Product.JAMS]
 
             mm_bids = [
                 level
@@ -73,11 +73,11 @@ class Trader:
 
                 basket_orders = []
                 for level in range(1, num_buy_levels + 1):
-                    basket_orders.append(Order(Product.GIFT_BASKET, mm_mid - level, 1))
+                    basket_orders.append(Order(Product.JAMS, mm_mid - level, 1))
                 for level in range(1, num_sell_levels + 1):
-                    basket_orders.append(Order(Product.GIFT_BASKET, mm_mid + level, -1))
+                    basket_orders.append(Order(Product.JAMS, mm_mid + level, -1))
                 
-                result[Product.GIFT_BASKET] = basket_orders
+                result[Product.JAMS] = basket_orders
         traderData = jsonpickle.encode(traderObject)
 
         return result, conversions, traderData
