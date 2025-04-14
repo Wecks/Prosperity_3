@@ -579,8 +579,8 @@ class MarketMakingStrategy(Strategy):
         soft_liquidate = len(self.window) == self.window_size and sum(self.window) >= self.window_size / 2 and self.window[-1]
         hard_liquidate = len(self.window) == self.window_size and all(self.window)
 
-        max_buy_price = true_value - 1 if position > self.limit * 0.75 else true_value
-        min_sell_price = true_value + 1 if position < self.limit * -0.75 else true_value
+        max_buy_price = true_value - 1 if position > self.limit * 0.25 else true_value
+        min_sell_price = true_value + 1 if position < self.limit * -0.25 else true_value
 
         for price, volume in sell_orders:
             if to_buy > 0 and price <= max_buy_price:
