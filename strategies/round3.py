@@ -576,7 +576,7 @@ class MarketMakingStrategy(Strategy):
         if len(self.window) > self.window_size:
             self.window.popleft()
 
-        soft_liquidate = len(self.window) == self.window_size and sum(self.window) >= self.window_size / 2 and self.window[-1]
+        soft_liquidate = len(self.window) == self.window_size and sum(self.window) >= self.window_size / 1 and self.window[-1]
         hard_liquidate = len(self.window) == self.window_size and all(self.window)
 
         max_buy_price = true_value - 1 if position > self.limit * 0.5 else true_value
@@ -916,7 +916,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         )
 
         # Trading threshold - adjust these values based on market behavior
-        threshold = 0.01  # Threshold for trading signal
+        threshold = 0.2  # Threshold for trading signal
 
         # Generate signals based on pricing difference
         if voucher_price > expected_price + threshold:
