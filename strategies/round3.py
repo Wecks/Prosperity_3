@@ -940,8 +940,8 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 class Trader:
     def __init__(self) -> None:
         limits = {
-            "RAINFOREST_RESIN": 100,
-            "KELP": 100,
+            "RAINFOREST_RESIN": 50,
+            "KELP": 50,
             "SQUID_INK": 50,
             "CROISSANTS": 250,
             "JAMS": 350,
