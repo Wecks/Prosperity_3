@@ -872,7 +872,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         # Set volatility parameter (may need tuning based on market behavior)
         # Sigma is set so that the Black-Scholes value matches the initial coupon price at day 1 timestamp 0
         # TODO: Check what value matches the initial coupon price at day 1 timestamp 0.
-        self.volatility = 0.21
+        self.volatility = 0.20
 
         # Track days to expiration - starts at 7 days and decreases each round
         # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
@@ -916,7 +916,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         )
 
         # Trading threshold - adjust these values based on market behavior
-        threshold = 5  # Threshold for trading signal
+        threshold = 4  # Threshold for trading signal
 
         # Generate signals based on pricing difference
         if voucher_price > expected_price + threshold:
