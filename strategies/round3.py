@@ -872,7 +872,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         # Set volatility parameter (may need tuning based on market behavior)
         # Sigma is set so that the Black-Scholes value matches the initial coupon price at day 1 timestamp 0
         # TODO: Check what value matches the initial coupon price at day 1 timestamp 0.
-        self.volatility = 0.20
+        self.volatility = 0.25
 
         # Track days to expiration - starts at 7 days and decreases each round
         # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
