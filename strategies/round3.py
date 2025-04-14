@@ -916,7 +916,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         )
 
         # Trading threshold - adjust these values based on market behavior
-        threshold = 0.1  # Threshold for trading signal
+        threshold = 0.01  # Threshold for trading signal
 
         # Generate signals based on pricing difference
         if voucher_price > expected_price + threshold:
