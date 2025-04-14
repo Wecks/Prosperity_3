@@ -17,6 +17,10 @@ This document provides comprehensive instructions on how to backtest your tradin
   - [Environment Variables](#environment-variables)
   - [Available Data](#available-data)
   - [Visualizing Results](#visualizing-results)
+  - [Optimization](#optimization)
+    - [Available Optimization Scripts](#available-optimization-scripts)
+    - [Usage](#usage)
+    - [Important Note](#important-note)
   - [Additional Resources](#additional-resources)
 
 ## Setup
@@ -157,8 +161,10 @@ The backtester includes data for the following rounds:
 - **Round 0**: Prices and anonymized trades data on RAINFOREST_RESIN and KELP that was used during tutorial submission runs.
 - **Round 1**: Prices and anonymized trades data on RAINFOREST_RESIN, KELP, and SQUID_INK.
 - **Round 2**: Prices and anonymized trades data on RAINFOREST_RESIN, KELP, SQUID_INK, CROISSANTS, JAMS, DJEMBES, PICNIC_BASKET1, and PICNIC_BASKET2.
-- **Round 6**: Prices and anonymized trades data from submission runs. Round 6 day X represents the submission data of round X.
-- **Round 7**: Prices data used during end-of-round runs.
+- **Round 3**: Prices and anonymized trades data on RAINFOREST_RESIN, KELP, SQUID_INK, CROISSANTS, JAMS, DJEMBES, PICNIC_BASKET1, PICNIC_BASKET2, VOLCANIC_ROCK, VOLCANIC_ROCK_VOUCHER_9500, VOLCANIC_ROCK_VOUCHER_9750, VOLCANIC_ROCK_VOUCHER_10000, VOLCANIC_ROCK_VOUCHER_10250, and VOLCANIC_ROCK_VOUCHER_10500.
+- **Round 6**: Prices and anonymized trades data from submission runs. Round 6 day X represents the submission data of round X, where X = 0 means the tutorial round and X = 6 means the submission data of round 2 before it was updated.
+- **Round 7**: Prices data used during end-of-round runs. Round 7 day X represents the end-of-round data of round X. For round 1, its old end-of-round data is in round 7 day 0 and its new data is in round 7 day 1.
+- **Round 8**: The version of round 2 data before it was updated (earlier version of RAINFOREST_RESIN data).
 
 ## Visualizing Results
 
@@ -168,6 +174,39 @@ To automatically open results in the visualizer:
 ```bash
 prosperity3bt strategies/your_strategy.py 1 --vis
 ```
+
+## Optimization
+
+Our workspace includes several optimization scripts that can help tune parameters for better trading performance. These scripts are located in the `backtester/` folder and are designed to test multiple parameter combinations to find optimal settings.
+
+### Available Optimization Scripts
+
+- **optimize_croissants.sh**: Optimizes long/short thresholds for CROISSANTS
+- **optimize_djembes.sh**: Optimizes long/short thresholds for DJEMBES
+- **optimize_jams.sh**: Optimizes long/short thresholds for JAMS
+- **optimize_picnic_basket1.sh**: Optimizes long/short thresholds for PICNIC_BASKET1
+- **optimize_picnic_basket2.sh**: Optimizes long/short thresholds for PICNIC_BASKET2
+- **optimize_thresholds.sh**: General threshold optimization script
+
+### Usage
+
+```bash
+# Run optimization for a specific product
+./backtester/optimize_croissants.sh
+
+# Check results in the optimization_results directory
+```
+
+### Important Note
+
+**These optimization scripts require modifying your strategy code to work properly.** The current implementation assumes that your strategy code:
+
+1. Contains configurable thresholds that can be modified by the scripts
+2. Uses a specific format for these thresholds (e.g., `"CROISSANTS": {"long": 50, "short": -50}`)
+
+Before using these scripts, you may need to adapt your `PicnicBasketStrategy` or other strategies to match the expected format. The scripts create temporary modified copies of your strategy files for testing and extract PnL results to find optimal values.
+
+All optimization results are saved to CSV files in the `optimization_results/` directory, with timestamps for easy tracking.
 
 ## Additional Resources
 

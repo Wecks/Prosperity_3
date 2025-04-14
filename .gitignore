@@ -41,6 +41,7 @@ venv.bak/
 
 # Logs (optionally exclude all logs if you don't want to commit them)
 logs/
+backtests/
 
 # Data files (not needed, they are include in the prosperity3bt lib)
 data/

@@ -3,7 +3,7 @@
 # Check if strategy name is provided
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 <strategy_name> [options]"
-    echo "This script runs backtests on all available rounds (0, 1, 6, 7)"
+    echo "This script runs backtests on all available rounds (0, 1, 2, 3, 6, 7, 8)"
     echo "Examples:"
     echo "  - All rounds:                $0 kelp_strategy"
     echo "  - With options:              $0 kelp_strategy \"--merge-pnl --print\""
@@ -18,7 +18,7 @@ LOG_DIR="$PROJECT_DIR/logs/backtest_results"
 STRATEGY_PATH="$PROJECT_DIR/strategies/${STRATEGY}.py"
 
 # Available rounds
-ROUNDS=(0 1 6 7)
+ROUNDS=(0 1 2 3 6 7 8)
 
 # Check if strategy file exists
 if [ ! -f "$STRATEGY_PATH" ]; then
