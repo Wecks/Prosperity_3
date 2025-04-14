@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Optimization script specifically for JAMS thresholds
+# Optimization script specifically for CROISSANTS thresholds
 # Get the directory of this script
 DIR=$(dirname "$0")
 
@@ -10,29 +10,39 @@ mkdir -p "$RESULTS_DIR"
 
 # Timestamp for this optimization run
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-RESULTS_FILE="$RESULTS_DIR/optimization_jams_${TIMESTAMP}.csv"
+RESULTS_FILE="$RESULTS_DIR/optimization_croissants_${TIMESTAMP}.csv"
 
 # Write header
-echo "jams_long,jams_short,pnl" > "$RESULTS_FILE"
+echo "croissants_long,croissants_short,pnl" > "$RESULTS_FILE"
 
 # Function to run backtest with given parameters
 run_backtest() {
-    local jm_long=$1
-    local jm_short=$2
+    local cr_long=$1
+    local cr_short=$2
 
     # Create a temporary modified strategy file in the strategies directory
-    local tmp_name="round2_optimized_${RANDOM}"
-    local tmp_file="$DIR/../strategies/${tmp_name}.py"
-    cp "$DIR/../strategies/round2.py" "$tmp_file"
+    local tmp_name="optimizer_round3_optimized_${RANDOM}"
+    local base_dir="$(cd "$DIR/../.." && pwd)"
+    local strategies_dir="$base_dir/strategies"
+    local tmp_file="$strategies_dir/${tmp_name}.py"
+
+    # Check if the strategy file exists
+    if [ ! -f "$strategies_dir/optimizer_round3.py" ]; then
+        echo "Error: Source strategy file not found at $strategies_dir/optimizer_round3.py"
+        return 1
+    fi
+
+    # Copy the strategy file
+    cp "$strategies_dir/optimizer_round3.py" "$tmp_file"
 
     # Update the thresholds in the temporary file
-    sed -i "s/\"JAMS\": {\"long\": [0-9]*, \"short\": [0-9]*}/\"JAMS\": {\"long\": $jm_long, \"short\": $jm_short}/g" "$tmp_file"
+    sed -i "s/\"CROISSANTS\": {\"long\": [0-9]*, \"short\": [0-9]*}/\"CROISSANTS\": {\"long\": $cr_long, \"short\": $cr_short}/g" "$tmp_file"
 
     # Run the backtest with the modified file and wait for it to complete
-    echo "Running test with JAMS($jm_long,$jm_short)..."
-    cd "$DIR/.."
-    local output_file="${tmp_file}.output"
-    prosperity3bt "./strategies/${tmp_name}.py" 2 > "$output_file" 2>&1
+    echo "Running test with CROISSANTS($cr_long,$cr_short)..."
+    cd "$base_dir"
+    local output_file="$strategies_dir/${tmp_name}.output"rm
+    prosperity3bt "strategies/${tmp_name}.py" 3 > "$output_file" 2>&1
     local exit_code=$?
     local output=$(cat "$output_file")
 
@@ -69,16 +79,16 @@ run_backtest() {
     fi
 
     # Append result to CSV
-    echo "$jm_long,$jm_short,$pnl" >> "$RESULTS_FILE"
+    echo "$cr_long,$cr_short,$pnl" >> "$RESULTS_FILE"
 
-    echo "Tested: JAMS($jm_long,$jm_short) → PnL: $pnl"
+    echo "Tested: CROISSANTS($cr_long,$cr_short) → PnL: $pnl"
 }
 
-# Test a range of JAMS thresholds
-# Starting with values around the defaults (195, 485)
-for jm_long in $(seq 0 20 80); do
-    for jm_short in $(seq 150 20 230); do
-        run_backtest $jm_long $jm_short
+# Test a range of CROISSANTS thresholds
+# Starting with values around the defaults (230, 355)
+for cr_long in $(seq 0 10 10); do
+    for cr_short in $(seq 130 10 130); do
+        run_backtest $cr_long $cr_short
     done
 done
 
@@ -90,11 +100,11 @@ sort -t ',' -k3 -nr "$RESULTS_FILE" | head -2
 
 # Create a plot if gnuplot is available
 if command -v gnuplot &> /dev/null; then
-    PLOT_FILE="$RESULTS_DIR/jams_plot_${TIMESTAMP}.png"
+    PLOT_FILE="$RESULTS_DIR/croissants_plot_${TIMESTAMP}.png"
     gnuplot <<- EOF
     set terminal png size 1200,800
     set output "$PLOT_FILE"
-    set title "JAMS Optimization Results"
+    set title "CROISSANTS Optimization Results"
     set datafile separator ","
     set xlabel "Long Threshold"
     set ylabel "Short Threshold"

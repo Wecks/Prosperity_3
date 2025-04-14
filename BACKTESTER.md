@@ -187,6 +187,7 @@ Our workspace includes several optimization scripts that can help tune parameter
 - **optimize_picnic_basket1.sh**: Optimizes long/short thresholds for PICNIC_BASKET1
 - **optimize_picnic_basket2.sh**: Optimizes long/short thresholds for PICNIC_BASKET2
 - **optimize_thresholds.sh**: General threshold optimization script
+- **optimize_volcanic_vouchers.sh**: Optimizes thresholds for each VOLCANIC_ROCK_VOUCHER variant (9500, 9750, 10000, 10250, and 10500) independently
 
 ### Usage
 

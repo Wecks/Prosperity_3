@@ -21,18 +21,28 @@ run_backtest() {
     local pb2_short=$2
 
     # Create a temporary modified strategy file in the strategies directory
-    local tmp_name="round2_optimized_${RANDOM}"
-    local tmp_file="$DIR/../strategies/${tmp_name}.py"
-    cp "$DIR/../strategies/round2.py" "$tmp_file"
+    local tmp_name="optimizer_round3_optimized_${RANDOM}"
+    local base_dir="$(cd "$DIR/../.." && pwd)"
+    local strategies_dir="$base_dir/strategies"
+    local tmp_file="$strategies_dir/${tmp_name}.py"
+
+    # Check if the strategy file exists
+    if [ ! -f "$strategies_dir/optimizer_round3.py" ]; then
+        echo "Error: Source strategy file not found at $strategies_dir/optimizer_round3.py"
+        return 1
+    fi
+
+    # Copy the strategy file
+    cp "$strategies_dir/optimizer_round3.py" "$tmp_file"
 
     # Update the thresholds in the temporary file
     sed -i "s/\"PICNIC_BASKET2\": {\"long\": [0-9]*, \"short\": [0-9]*}/\"PICNIC_BASKET2\": {\"long\": $pb2_long, \"short\": $pb2_short}/g" "$tmp_file"
 
     # Run the backtest with the modified file and wait for it to complete
     echo "Running test with PB2($pb2_long,$pb2_short)..."
-    cd "$DIR/.."
-    local output_file="${tmp_file}.output"
-    prosperity3bt "./strategies/${tmp_name}.py" 2 > "$output_file" 2>&1
+    cd "$base_dir"
+    local output_file="$strategies_dir/${tmp_name}.output"
+    prosperity3bt "strategies/${tmp_name}.py" 3 > "$output_file" 2>&1
     local exit_code=$?
     local output=$(cat "$output_file")
 

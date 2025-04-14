@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Optimization script specifically for PICNIC_BASKET1 thresholds
+# Optimization script specifically for DJEMBES thresholds
 # Get the directory of this script
 DIR=$(dirname "$0")
 
@@ -10,29 +10,39 @@ mkdir -p "$RESULTS_DIR"
 
 # Timestamp for this optimization run
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-RESULTS_FILE="$RESULTS_DIR/optimization_picnic_basket1_${TIMESTAMP}.csv"
+RESULTS_FILE="$RESULTS_DIR/optimization_djembes_${TIMESTAMP}.csv"
 
 # Write header
-echo "pb1_long,pb1_short,pnl" > "$RESULTS_FILE"
+echo "djembes_long,djembes_short,pnl" > "$RESULTS_FILE"
 
 # Function to run backtest with given parameters
 run_backtest() {
-    local pb1_long=$1
-    local pb1_short=$2
+    local dj_long=$1
+    local dj_short=$2
 
     # Create a temporary modified strategy file in the strategies directory
-    local tmp_name="round2_optimized_${RANDOM}"
-    local tmp_file="$DIR/../strategies/${tmp_name}.py"
-    cp "$DIR/../strategies/round2.py" "$tmp_file"
+    local tmp_name="optimizer_round3_optimized_${RANDOM}"
+    local base_dir="$(cd "$DIR/../.." && pwd)"
+    local strategies_dir="$base_dir/strategies"
+    local tmp_file="$strategies_dir/${tmp_name}.py"
+
+    # Check if the strategy file exists
+    if [ ! -f "$strategies_dir/optimizer_round3.py" ]; then
+        echo "Error: Source strategy file not found at $strategies_dir/optimizer_round3.py"
+        return 1
+    fi
+
+    # Copy the strategy file
+    cp "$strategies_dir/optimizer_round3.py" "$tmp_file"
 
     # Update the thresholds in the temporary file
-    sed -i "s/\"PICNIC_BASKET1\": {\"long\": [0-9]*, \"short\": [0-9]*}/\"PICNIC_BASKET1\": {\"long\": $pb1_long, \"short\": $pb1_short}/g" "$tmp_file"
+    sed -i "s/\"DJEMBES\": {\"long\": [0-9]*, \"short\": [0-9]*}/\"DJEMBES\": {\"long\": $dj_long, \"short\": $dj_short}/g" "$tmp_file"
 
     # Run the backtest with the modified file and wait for it to complete
-    echo "Running test with PB1($pb1_long,$pb1_short)..."
-    cd "$DIR/.."
-    local output_file="${tmp_file}.output"
-    prosperity3bt "./strategies/${tmp_name}.py" 2 > "$output_file" 2>&1
+    echo "Running test with DJEMBES($dj_long,$dj_short)..."
+    cd "$base_dir"
+    local output_file="$strategies_dir/${tmp_name}.output"
+    prosperity3bt "strategies/${tmp_name}.py" 3 > "$output_file" 2>&1
     local exit_code=$?
     local output=$(cat "$output_file")
 
@@ -69,16 +79,16 @@ run_backtest() {
     fi
 
     # Append result to CSV
-    echo "$pb1_long,$pb1_short,$pnl" >> "$RESULTS_FILE"
+    echo "$dj_long,$dj_short,$pnl" >> "$RESULTS_FILE"
 
-    echo "Tested: PB1($pb1_long,$pb1_short) → PnL: $pnl"
+    echo "Tested: DJEMBES($dj_long,$dj_short) → PnL: $pnl"
 }
 
-# Test a range of PICNIC_BASKET1 thresholds
-# More granular search around promising values
-for pb1_long in $(seq 60 10 90); do
-    for pb1_short in $(seq 110 10 150); do
-        run_backtest $pb1_long $pb1_short
+# Test a range of DJEMBES thresholds
+# Starting with values around the defaults (325, 370)
+for dj_long in $(seq 120 10 160); do
+    for dj_short in $(seq 190 10 230); do
+        run_backtest $dj_long $dj_short
     done
 done
 
@@ -90,11 +100,11 @@ sort -t ',' -k3 -nr "$RESULTS_FILE" | head -2
 
 # Create a plot if gnuplot is available
 if command -v gnuplot &> /dev/null; then
-    PLOT_FILE="$RESULTS_DIR/picnic_basket1_plot_${TIMESTAMP}.png"
+    PLOT_FILE="$RESULTS_DIR/djembes_plot_${TIMESTAMP}.png"
     gnuplot <<- EOF
     set terminal png size 1200,800
     set output "$PLOT_FILE"
-    set title "PICNIC_BASKET1 Optimization Results"
+    set title "DJEMBES Optimization Results"
     set datafile separator ","
     set xlabel "Long Threshold"
     set ylabel "Short Threshold"
