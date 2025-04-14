@@ -846,11 +846,11 @@ class Trader:
             "PICNIC_BASKET1": 60,
             "PICNIC_BASKET2": 100,
             "VOLCANIC_ROCK": 400,
-            "VOLCANIC_ROCK_VOUCHER_9500": 100, #Expiration 7 days (=round) for all voucher,
-            "VOLCANIC_ROCK_VOUCHER_9750": 100,
-            "VOLCANIC_ROCK_VOUCHER_10000": 100,
-            "VOLCANIC_ROCK_VOUCHER_10250": 100,
-            "VOLCANIC_ROCK_VOUCHER_10500": 100,
+            "VOLCANIC_ROCK_VOUCHER_9500": 300, #Expiration 7 days (=round) for all voucher,
+            "VOLCANIC_ROCK_VOUCHER_9750": 300,
+            "VOLCANIC_ROCK_VOUCHER_10000": 300,
+            "VOLCANIC_ROCK_VOUCHER_10250": 300,
+            "VOLCANIC_ROCK_VOUCHER_10500": 300,
         }
 
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
