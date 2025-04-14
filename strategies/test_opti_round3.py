@@ -703,7 +703,7 @@ class PicnicBasketStrategy(SignalStrategy):
      # Class-level default thresholds
      DEFAULT_THRESHOLDS = {
          "CROISSANTS": {"long": 30, "short": 150},
-         "JAMS": {"long": 100, "short": 250},
+         "JAMS": {"long": 0, "short": 150},
          "DJEMBES": {"long": 130, "short": 220},
          "PICNIC_BASKET1": {"long": 60, "short": 130},
          "PICNIC_BASKET2": {"long": 40, "short": 110}
