@@ -589,13 +589,13 @@ class MarketMakingStrategy(Strategy):
                 to_buy -= quantity
 
         if to_buy > 0 and hard_liquidate:
-            quantity = to_buy // 1
+            quantity = to_buy // 2
             self.buy(true_value, quantity)
             to_buy -= quantity
 
         if to_buy > 0 and soft_liquidate:
-            quantity = to_buy // 1
-            self.buy(true_value - 1, quantity)
+            quantity = to_buy // 2
+            self.buy(true_value - 2, quantity)
             to_buy -= quantity
 
         if to_buy > 0:
@@ -940,8 +940,8 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 class Trader:
     def __init__(self) -> None:
         limits = {
-            "RAINFOREST_RESIN": 50,
-            "KELP": 50,
+            "RAINFOREST_RESIN": 100,
+            "KELP": 100,
             "SQUID_INK": 50,
             "CROISSANTS": 250,
             "JAMS": 350,
