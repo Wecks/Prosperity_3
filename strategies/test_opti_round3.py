@@ -42,7 +42,7 @@ PARAMS = {
         "prevent_adverse": True,
         "adverse_volume": 15,
         "reversion_beta": -4.229,
-        "KELP_min_edge": 1,
+        "KELP_min_edge": 2,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
