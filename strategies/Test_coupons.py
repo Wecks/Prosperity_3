@@ -307,7 +307,7 @@ class OrchidsStrategy(Strategy):
         buy_price = obs.askPrice + obs.transportFees + obs.importTariff
         self.sell(max(int(obs.bidPrice - 0.5), int(buy_price + 1)), self.limit)
 
-class ChocolateStrategy(SignalStrategy):
+class VOLCANIK_ROCKStrategy(SignalStrategy):
     def get_signal(self, state: TradingState) -> Signal | None:
         trades = state.market_trades.get(self.symbol, [])
         trades = [t for t in trades if t.timestamp == state.timestamp - 100]
@@ -331,15 +331,15 @@ class RosesStrategy(SignalStrategy):
 
 class GiftBasketStrategy(SignalStrategy):
     def get_signal(self, state: TradingState) -> Signal | None:
-        if any(symbol not in state.order_depths for symbol in ["CHOCOLATE", "STRAWBERRIES", "ROSES", "GIFT_BASKET"]):
+        if any(symbol not in state.order_depths for symbol in ["VOLCANIK_ROCK", "STRAWBERRIES", "ROSES", "GIFT_BASKET"]):
             return
 
-        chocolate = self.get_mid_price(state, "CHOCOLATE")
+        VOLCANIK_ROCK = self.get_mid_price(state, "VOLCANIK_ROCK")
         strawberries = self.get_mid_price(state, "STRAWBERRIES")
         roses = self.get_mid_price(state, "ROSES")
         gift_basket = self.get_mid_price(state, "GIFT_BASKET")
 
-        diff = gift_basket - 4 * chocolate - 6 * strawberries - roses
+        diff = gift_basket - 4 * VOLCANIK_ROCK - 6 * strawberries - roses
 
         # if diff < 260:
         #     return Signal.LONG
@@ -347,7 +347,7 @@ class GiftBasketStrategy(SignalStrategy):
         #     return Signal.SHORT
 
         long_threshold, short_threshold = {
-            "CHOCOLATE": (230, 355),
+            "VOLCANIK_ROCK": (230, 355),
             "STRAWBERRIES": (195, 485),
             "ROSES": (325, 370),
             "GIFT_BASKET": (290, 355),
@@ -359,7 +359,7 @@ class GiftBasketStrategy(SignalStrategy):
             return Signal.SHORT
 
         # premium, threshold = {
-        #     "CHOCOLATE": (285, 0.19),
+        #     "VOLCANIK_ROCK": (285, 0.19),
         #     "STRAWBERRIES": (340, 0.43),
         #     "ROSES": (350, 0.05),
         #     "GIFT_BASKET": (325, 0.12),
@@ -451,7 +451,7 @@ class Trader:
             "AMETHYSTS": 20,
             "VOLCANIK_ROCK": 20,
             "ORCHIDS": 100,
-            "CHOCOLATE": 250,
+            "VOLCANIK_ROCK": 250,
             "STRAWBERRIES": 350,
             "ROSES": 60,
             "GIFT_BASKET": 60,
@@ -463,7 +463,7 @@ class Trader:
             "AMETHYSTS": AmethystsStrategy,
             "VOLCANIK_ROCK": VOLCANIK_ROCKStrategy,
             "ORCHIDS": OrchidsStrategy,
-            "CHOCOLATE": ChocolateStrategy,
+            "VOLCANIK_ROCK": VOLCANIK_ROCKStrategy,
             "STRAWBERRIES": GiftBasketStrategy,
             "ROSES": RosesStrategy,
             "GIFT_BASKET": GiftBasketStrategy,
