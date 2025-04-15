@@ -15,7 +15,7 @@ class Product:
     ROSES = "ROSES"
 
 
-PARAMS = {Product.DJEMBES: {"min_width": 1, "max_width": 8, "mm_min_volume": 8}}
+PARAMS = {Product.DJEMBES: {"min_width": 1, "max_width": 8, "mm_min_volume": 5}}
 
 
 class Trader:
