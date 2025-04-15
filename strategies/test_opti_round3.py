@@ -38,7 +38,7 @@ PARAMS = {
     },
     Product.SQUID_INK: {
         "take_width": 1,
-        "clear_width": 0.5,
+        "clear_width": 1,
         "prevent_adverse": True,
         "adverse_volume": 15,
         "reversion_beta": -0.229,
