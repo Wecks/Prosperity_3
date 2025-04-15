@@ -58,7 +58,7 @@ class Trader:
         self.params = params
 
         self.LIMIT = {
-            Product.JAMS: 50,
+            Product.JAMS: 350,
             Product.SQUID_INK: 50,
             Product.ORCHIDS: 100,
             Product.GIFT_BASKET: 60,
