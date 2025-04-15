@@ -291,7 +291,7 @@ class AmethystsStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         return 10_000
 
-class StarfruitStrategy(MarketMakingStrategy):
+class VOLCANIK_ROCKStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         return round(self.get_mid_price(state, self.symbol))
 
@@ -449,7 +449,7 @@ class Trader:
     def __init__(self) -> None:
         limits = {
             "AMETHYSTS": 20,
-            "STARFRUIT": 20,
+            "VOLCANIK_ROCK": 20,
             "ORCHIDS": 100,
             "CHOCOLATE": 250,
             "STRAWBERRIES": 350,
@@ -461,7 +461,7 @@ class Trader:
 
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
             "AMETHYSTS": AmethystsStrategy,
-            "STARFRUIT": StarfruitStrategy,
+            "VOLCANIK_ROCK": VOLCANIK_ROCKStrategy,
             "ORCHIDS": OrchidsStrategy,
             "CHOCOLATE": ChocolateStrategy,
             "STRAWBERRIES": GiftBasketStrategy,
