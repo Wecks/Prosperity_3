@@ -113,6 +113,7 @@ class Logger:
 
         return value[:max_length - 3] + "..."
 
+
 logger = Logger()
 
 class TechnicalIndicators:
@@ -279,13 +280,13 @@ class TechnicalIndicators:
 
         Args:
             highs: List of high prices
-            lows: List of low prices
+            lows: List of low prix
             closes: List of closing prices
             k_window: Window size for %K (default: 14)
             d_window: Window size for %D (default: 3)
 
         Returns:
-            tuple containing (%K, %D)
+            tuple contenant (%K, %D)
         """
         if len(closes) < k_window:
             return [None] * len(closes), [None] * len(closes)
@@ -645,7 +646,7 @@ class MAStrategy(Strategy):
         # Add new prices to our historical record
         self.prices.append(current_mid)
 
-        sma = simple_moving_average(list(self.prices), self.sma_length)[-1]
+        sma = TechnicalIndicators.simple_moving_average(list(self.prices), self.sma_length)[-1]
 
         order_depth = state.order_depths[self.symbol]
         buy_orders = sorted(order_depth.buy_orders.items(), reverse=True)
@@ -698,39 +699,225 @@ class KelpStrategy(MarketMakingStrategy):
         return round(self.get_mid_price(state, self.symbol))
 
 
-# class OrchidsStrategy(Strategy):
-#     def act(self, state: TradingState) -> None:
-#         position = state.position.get(self.symbol, 0)
-#         self.convert(-1 * position)
+# =================== STRATÉGIES AJOUTÉES POUR JAMS et SQUID_INK ===================
 
-#         obs = state.observations.conversionObservations.get(self.symbol, None)
-#         if obs is None:
-#             return
+class SquidInkStrategy(Strategy):
+    PARAMS = {
+       "take_width": 5,
+       "clear_width": 0.1,
+       "prevent_adverse": True,
+       "adverse_volume": 15,
+       "reversion_beta": -0.129,
+       "min_edge": 2.5
+    }
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+        self.last_price = None  # Pour garder en mémoire le dernier prix moyen
 
-#         buy_price = obs.askPrice + obs.transportFees + obs.importTariff
-#         self.sell(max(int(obs.bidPrice - 0.5), int(buy_price + 1)), self.limit)
+    def compute_fair_value(self, order_depth: OrderDepth) -> float:
+        if order_depth.sell_orders and order_depth.buy_orders:
+            best_ask = min(order_depth.sell_orders.keys())
+            best_bid = max(order_depth.buy_orders.keys())
+            adv_vol = self.PARAMS["adverse_volume"]
+            filtered_ask = [price for price, qty in order_depth.sell_orders.items() if abs(qty) >= adv_vol]
+            filtered_bid = [price for price, qty in order_depth.buy_orders.items() if abs(qty) >= adv_vol]
+            mm_ask = min(filtered_ask) if filtered_ask else None
+            mm_bid = max(filtered_bid) if filtered_bid else None
+            if mm_ask is None or mm_bid is None:
+                if self.last_price is None:
+                    mmmid_price = (best_ask + best_bid) / 2
+                else:
+                    mmmid_price = self.last_price
+            else:
+                mmmid_price = (mm_ask + mm_bid) / 2
+            if self.last_price is not None:
+                last_returns = (mmmid_price - self.last_price) / self.last_price
+                pred_returns = last_returns * self.PARAMS["reversion_beta"]
+                fair = mmmid_price + (mmmid_price * pred_returns)
+            else:
+                fair = mmmid_price
+            self.last_price = mmmid_price
+            return fair
+        return None
 
-# class ChocolateStrategy(SignalStrategy):
-#     def get_signal(self, state: TradingState) -> Signal | None:
-#         trades = state.market_trades.get(self.symbol, [])
-#         trades = [t for t in trades if t.timestamp == state.timestamp - 100]
+    def act(self, state: TradingState) -> None:
+        if self.symbol not in state.order_depths:
+            return
+        order_depth = state.order_depths[self.symbol]
+        current_position = state.position.get(self.symbol, 0)
+        fair = self.compute_fair_value(order_depth)
+        if fair is None:
+            return
+        take_width = self.PARAMS["take_width"]
+        clear_width = self.PARAMS["clear_width"]
+        buy_order_volume = 0
+        sell_order_volume = 0
 
-#         if any(t.buyer == "Vladimir" and t.seller == "Remy" for t in trades):
-#             return Signal.LONG
+        # Prendre les ordres (côté achat)
+        if order_depth.sell_orders:
+            best_ask = min(order_depth.sell_orders.keys())
+            ask_qty = abs(order_depth.sell_orders[best_ask])
+            if best_ask <= fair - take_width:
+                quantity = min(ask_qty, self.limit - current_position)
+                if quantity > 0:
+                    self.buy(best_ask, quantity)
+                    buy_order_volume += quantity
+        # Prendre les ordres (côté vente)
+        if order_depth.buy_orders:
+            best_bid = max(order_depth.buy_orders.keys())
+            bid_qty = order_depth.buy_orders[best_bid]
+            if best_bid >= fair + take_width:
+                quantity = min(bid_qty, self.limit + current_position)
+                if quantity > 0:
+                    self.sell(best_bid, quantity)
+                    sell_order_volume += quantity
 
-#         if any(t.buyer == "Remy" and t.seller == "Vladimir" for t in trades):
-#             return Signal.SHORT
+        position_after_take = current_position + buy_order_volume - sell_order_volume
+        fair_bid = round(fair - clear_width)
+        fair_ask = round(fair + clear_width)
+        if position_after_take > 0:
+            clear_quantity = sum(qty for price, qty in order_depth.buy_orders.items() if price >= fair_ask)
+            clear_quantity = min(clear_quantity, position_after_take)
+            if clear_quantity > 0:
+                self.sell(fair_ask, clear_quantity)
+                sell_order_volume += clear_quantity
+        if position_after_take < 0:
+            clear_quantity = sum(abs(qty) for price, qty in order_depth.sell_orders.items() if price <= fair_bid)
+            clear_quantity = min(clear_quantity, abs(position_after_take))
+            if clear_quantity > 0:
+                self.buy(fair_bid, clear_quantity)
+                buy_order_volume += clear_quantity
 
-# class RosesStrategy(SignalStrategy):
-#     def get_signal(self, state: TradingState) -> Signal | None:
-#         trades = state.market_trades.get(self.symbol, [])
-#         trades = [t for t in trades if t.timestamp == state.timestamp - 100]
+        # Ordres de market making basés sur min_edge
+        min_edge = self.PARAMS["min_edge"]
+        aaf = [price for price in order_depth.sell_orders.keys() if price >= round(fair + min_edge)]
+        bbf = [price for price in order_depth.buy_orders.keys() if price <= round(fair - min_edge)]
+        baaf = min(aaf) if aaf else round(fair + min_edge)
+        bbbf = max(bbf) if bbf else round(fair - min_edge)
+        mm_buy_price = bbbf + 1
+        mm_sell_price = baaf - 1
+        remaining_buy = self.limit - (current_position + buy_order_volume)
+        remaining_sell = self.limit + (current_position - sell_order_volume)
+        if remaining_buy > 0:
+            self.buy(mm_buy_price, remaining_buy)
+        if remaining_sell > 0:
+            self.sell(mm_sell_price, remaining_sell)
 
-#         if any(t.buyer in RIHIANNAS and t.seller == "Vinnie" for t in trades):
-#             return Signal.LONG
+    def save(self) -> JSON:
+        return {"last_price": self.last_price}
 
-#         if any(t.buyer == "Vinnie" and t.seller in RIHIANNAS for t in trades):
-#             return Signal.SHORT
+    def load(self, data: JSON) -> None:
+        self.last_price = data.get("last_price", None)
+
+
+class JamsStrategy(Strategy):
+    PARAMS = {
+       "take_width": 5,
+       "clear_width": 0.1,
+       "prevent_adverse": True,
+       "adverse_volume": 15,
+       "reversion_beta": -0.200,
+       "min_edge": 2.0
+    }
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+        self.last_price = None
+
+    def compute_fair_value(self, order_depth: OrderDepth) -> float:
+        if order_depth.sell_orders and order_depth.buy_orders:
+            best_ask = min(order_depth.sell_orders.keys())
+            best_bid = max(order_depth.buy_orders.keys())
+            adv_vol = self.PARAMS["adverse_volume"]
+            filtered_ask = [price for price, qty in order_depth.sell_orders.items() if abs(qty) >= adv_vol]
+            filtered_bid = [price for price, qty in order_depth.buy_orders.items() if abs(qty) >= adv_vol]
+            mm_ask = min(filtered_ask) if filtered_ask else None
+            mm_bid = max(filtered_bid) if filtered_bid else None
+            if mm_ask is None or mm_bid is None:
+                if self.last_price is None:
+                    mmmid_price = (best_ask + best_bid) / 2
+                else:
+                    mmmid_price = self.last_price
+            else:
+                mmmid_price = (mm_ask + mm_bid) / 2
+            if self.last_price is not None:
+                last_returns = (mmmid_price - self.last_price) / self.last_price
+                pred_returns = last_returns * self.PARAMS["reversion_beta"]
+                fair = mmmid_price + (mmmid_price * pred_returns)
+            else:
+                fair = mmmid_price
+            self.last_price = mmmid_price
+            return fair
+        return None
+
+    def act(self, state: TradingState) -> None:
+        if self.symbol not in state.order_depths:
+            return
+        order_depth = state.order_depths[self.symbol]
+        current_position = state.position.get(self.symbol, 0)
+        fair = self.compute_fair_value(order_depth)
+        if fair is None:
+            return
+        take_width = self.PARAMS["take_width"]
+        clear_width = self.PARAMS["clear_width"]
+        buy_order_volume = 0
+        sell_order_volume = 0
+
+        # Prendre les ordres : achat si best ask <= fair - take_width, vente si best bid >= fair + take_width.
+        if order_depth.sell_orders:
+            best_ask = min(order_depth.sell_orders.keys())
+            ask_qty = abs(order_depth.sell_orders[best_ask])
+            if best_ask <= fair - take_width:
+                quantity = min(ask_qty, self.limit - current_position)
+                if quantity > 0:
+                    self.buy(best_ask, quantity)
+                    buy_order_volume += quantity
+        if order_depth.buy_orders:
+            best_bid = max(order_depth.buy_orders.keys())
+            bid_qty = order_depth.buy_orders[best_bid]
+            if best_bid >= fair + take_width:
+                quantity = min(bid_qty, self.limit + current_position)
+                if quantity > 0:
+                    self.sell(best_bid, quantity)
+                    sell_order_volume += quantity
+
+        position_after_take = current_position + buy_order_volume - sell_order_volume
+        fair_bid = round(fair - clear_width)
+        fair_ask = round(fair + clear_width)
+        if position_after_take > 0:
+            clear_quantity = sum(qty for price, qty in order_depth.buy_orders.items() if price >= fair_ask)
+            clear_quantity = min(clear_quantity, position_after_take)
+            if clear_quantity > 0:
+                self.sell(fair_ask, clear_quantity)
+                sell_order_volume += clear_quantity
+        if position_after_take < 0:
+            clear_quantity = sum(abs(qty) for price, qty in order_depth.sell_orders.items() if price <= fair_bid)
+            clear_quantity = min(clear_quantity, abs(position_after_take))
+            if clear_quantity > 0:
+                self.buy(fair_bid, clear_quantity)
+                buy_order_volume += clear_quantity
+
+        # Ordres de market making avec min_edge
+        min_edge = self.PARAMS["min_edge"]
+        aaf = [price for price in order_depth.sell_orders.keys() if price >= round(fair + min_edge)]
+        bbf = [price for price in order_depth.buy_orders.keys() if price <= round(fair - min_edge)]
+        baaf = min(aaf) if aaf else round(fair + min_edge)
+        bbbf = max(bbf) if bbf else round(fair - min_edge)
+        mm_buy_price = bbbf + 1
+        mm_sell_price = baaf - 1
+        remaining_buy = self.limit - (current_position + buy_order_volume)
+        remaining_sell = self.limit + (current_position - sell_order_volume)
+        if remaining_buy > 0:
+            self.buy(mm_buy_price, remaining_buy)
+        if remaining_sell > 0:
+            self.sell(mm_sell_price, remaining_sell)
+
+    def save(self) -> JSON:
+        return {"last_price": self.last_price}
+
+    def load(self, data: JSON) -> None:
+        self.last_price = data.get("last_price", None)
+
+# =================== FIN DES STRATÉGIES JAMS et SQUID_INK ===================
 
 class PicnicBasketStrategy(SignalStrategy):
     def get_signal(self, state: TradingState) -> Signal | None:
@@ -790,72 +977,72 @@ class PicnicBasketStrategy(SignalStrategy):
 # class CoconutStrategy(SignalStrategy):
 #     def __init__(self, symbol: Symbol, limit: int) -> None:
 #         super().__init__(symbol, limit)
-
+#
 #         self.last_buyer = None
 #         self.last_price = None
-
+#
 #     def get_signal(self, state: TradingState) -> Signal | None:
 #         trades = state.market_trades.get(self.symbol, [])
 #         trades = [t for t in trades if t.timestamp == state.timestamp - 100]
 #         trades = [t for t in trades if (t.buyer == "Vinnie" and t.seller in RIHIANNAS) or (t.buyer in RIHIANNAS and t.seller == "Vinnie")]
 #         if len(trades) == 0:
 #             return
-
+#
 #         trade = trades[0]
-
+#
 #         signal = None
 #         if trade.buyer == self.last_buyer and self.last_price is not None:
 #             if self.last_price > trade.price:
 #                 signal = Signal.SHORT
 #             elif self.last_price < trade.price:
 #                 signal = Signal.LONG
-
+#
 #         self.last_buyer = trade.buyer
 #         self.last_price = trade.price
-
+#
 #         return signal
-
+#
 # class CoconutCouponStrategy(SignalStrategy):
 #     def __init__(self, symbol: Symbol, limit: int) -> None:
 #         super().__init__(symbol, limit)
-
+#
 #         self.cdf = NormalDist().cdf
-
+#
 #     def get_signal(self, state: TradingState) -> Signal | None:
 #         if "COCONUT" not in state.order_depths or len(state.order_depths["COCONUT"].buy_orders) == 0 or len(state.order_depths["COCONUT"].sell_orders) == 0:
 #             return
-
+#
 #         if "COCONUT_COUPON" not in state.order_depths or len(state.order_depths["COCONUT_COUPON"].buy_orders) == 0 or len(state.order_depths["COCONUT_COUPON"].sell_orders) == 0:
 #             return
-
+#
 #         coco = self.get_mid_price(state, "COCONUT")
 #         coup = self.get_mid_price(state, "COCONUT_COUPON")
-
+#
 #         asset_price = coco
 #         strike_price = 10_000
 #         expiration_time = 245 / 365
 #         risk_free_rate = 0
-
+#
 #         # Sigma is set so that the Black-Scholes value matches the initial coupon price at day 1 timestamp 0
 #         volatility = 0.193785
-
+#
 #         expected_price = self.black_scholes(asset_price, strike_price, expiration_time, risk_free_rate, volatility)
 #         if coup > expected_price + 2:
 #             return Signal.SHORT
 #         elif coup < expected_price - 2:
 #             return Signal.LONG
-
-    # def black_scholes(
-    #     self,
-    #     asset_price: float,
-    #     strike_price: float,
-    #     expiration_time: float,
-    #     risk_free_rate: float,
-    #     volatility: float,
-    # ) -> float:
-    #     d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility ** 2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
-    #     d2 = d1 - volatility * math.sqrt(expiration_time)
-    #     return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
+#
+#     # def black_scholes(
+#     #     self,
+#     #     asset_price: float,
+#     #     strike_price: float,
+#     #     expiration_time: float,
+#     #     risk_free_rate: float,
+#     #     volatility: float,
+#     # ) -> float:
+#     #     d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility ** 2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
+#     #     d2 = d1 - volatility * math.sqrt(expiration_time)
+#     #     return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
 
 # class VolcanicRockStrategy(MarketMakingStrategy):
 #     def get_true_value(self, state: TradingState) -> int:
@@ -959,13 +1146,10 @@ class Trader:
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
             "RAINFOREST_RESIN": RainforestStrategy,
             "KELP": KelpStrategy,
-            # "SQUID_INK": SquidinkStrategy,
-            # "CROISSANTS": PicnicBasketStrategy,
-            # "JAMS": PicnicBasketStrategy,
-            # "DJEMBES": PicnicBasketStrategy,
+            "SQUID_INK": SquidInkStrategy,
+            "JAMS": JamsStrategy,
             "PICNIC_BASKET1": PicnicBasketStrategy,
             "PICNIC_BASKET2": PicnicBasketStrategy,
-            # "VOLCANIC_ROCK": VolcanicRockStrategy,
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
