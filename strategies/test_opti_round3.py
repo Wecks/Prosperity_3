@@ -16,8 +16,8 @@ BASKETS_TRADES = "shshhhhhhhhhhhhhhhhhhhhbhhhhhhhhhhhhhhhhhhhhhbbbhhhhhhhhhhhhhh
 
 
 class Product:
-    RAINFOREST_RESIN = "RAINFOREST_RESIN"
-    STARFRUIT = "STARFRUIT"
+    AMETHYSTS = "AMETHYSTS"
+    KELP = "KELP"
     ORCHIDS = "ORCHIDS"
     GIFT_BASKET = "GIFT_BASKET"
     CHOCOLATE = "CHOCOLATE"
@@ -30,19 +30,19 @@ class Product:
 
 
 PARAMS = {
-    Product.RAINFOREST_RESIN: {
+    Product.AMETHYSTS: {
         "fair_value": 10000,
         "take_width": 1,
         "clear_width": 0.5,
         "volume_limit": 0,
     },
-    Product.STARFRUIT: {
+    Product.KELP: {
         "take_width": 1,
         "clear_width": 0,
         "prevent_adverse": True,
         "adverse_volume": 15,
         "reversion_beta": -0.229,
-        "starfruit_min_edge": 2,
+        "KELP_min_edge": 2,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
@@ -58,8 +58,8 @@ class Trader:
         self.params = params
 
         self.LIMIT = {
-            Product.RAINFOREST_RESIN: 20,
-            Product.STARFRUIT: 20,
+            Product.AMETHYSTS: 20,
+            Product.KELP: 20,
             Product.ORCHIDS: 100,
             Product.GIFT_BASKET: 60,
             Product.CHOCOLATE: 250,
@@ -252,7 +252,7 @@ class Trader:
 
         return buy_order_volume, sell_order_volume
 
-    def starfruit_fair_value(self, order_depth: OrderDepth, traderObject) -> float:
+    def KELP_fair_value(self, order_depth: OrderDepth, traderObject) -> float:
         if len(order_depth.sell_orders) != 0 and len(order_depth.buy_orders) != 0:
             best_ask = min(order_depth.sell_orders.keys())
             best_bid = max(order_depth.buy_orders.keys())
@@ -260,34 +260,34 @@ class Trader:
                 price
                 for price in order_depth.sell_orders.keys()
                 if abs(order_depth.sell_orders[price])
-                >= self.params[Product.STARFRUIT]["adverse_volume"]
+                >= self.params[Product.KELP]["adverse_volume"]
             ]
             filtered_bid = [
                 price
                 for price in order_depth.buy_orders.keys()
                 if abs(order_depth.buy_orders[price])
-                >= self.params[Product.STARFRUIT]["adverse_volume"]
+                >= self.params[Product.KELP]["adverse_volume"]
             ]
             mm_ask = min(filtered_ask) if len(filtered_ask) > 0 else None
             mm_bid = max(filtered_bid) if len(filtered_bid) > 0 else None
             if mm_ask == None or mm_bid == None:
-                if traderObject.get("starfruit_last_price", None) == None:
+                if traderObject.get("KELP_last_price", None) == None:
                     mmmid_price = (best_ask + best_bid) / 2
                 else:
-                    mmmid_price = traderObject["starfruit_last_price"]
+                    mmmid_price = traderObject["KELP_last_price"]
             else:
                 mmmid_price = (mm_ask + mm_bid) / 2
 
-            if traderObject.get("starfruit_last_price", None) != None:
-                last_price = traderObject["starfruit_last_price"]
+            if traderObject.get("KELP_last_price", None) != None:
+                last_price = traderObject["KELP_last_price"]
                 last_returns = (mmmid_price - last_price) / last_price
                 pred_returns = (
-                    last_returns * self.params[Product.STARFRUIT]["reversion_beta"]
+                    last_returns * self.params[Product.KELP]["reversion_beta"]
                 )
                 fair = mmmid_price + (mmmid_price * pred_returns)
             else:
                 fair = mmmid_price
-            traderObject["starfruit_last_price"] = mmmid_price
+            traderObject["KELP_last_price"] = mmmid_price
             return fair
         return None
 
@@ -321,7 +321,7 @@ class Trader:
                 bbbf = fair_value - 3  # still want edge 2 if position is not a concern
 
         buy_order_volume, sell_order_volume = self.market_make(
-            Product.RAINFOREST_RESIN,
+            Product.AMETHYSTS,
             orders,
             bbbf + 1,
             baaf - 1,
@@ -393,7 +393,7 @@ class Trader:
         )
         return orders, buy_order_volume, sell_order_volume
 
-    def make_starfruit_orders(
+    def make_KELP_orders(
         self,
         order_depth: OrderDepth,
         fair_value: float,
@@ -416,7 +416,7 @@ class Trader:
         baaf = min(aaf) if len(aaf) > 0 else round(fair_value + min_edge)
         bbbf = max(bbf) if len(bbf) > 0 else round(fair_value - min_edge)
         buy_order_volume, sell_order_volume = self.market_make(
-            Product.STARFRUIT,
+            Product.KELP,
             orders,
             bbbf + 1,
             baaf - 1,
@@ -762,85 +762,85 @@ class Trader:
 
         print(f"STOPS: {stops}")
 
-        if Product.RAINFOREST_RESIN in self.params and Product.RAINFOREST_RESIN in state.order_depths:
+        if Product.AMETHYSTS in self.params and Product.AMETHYSTS in state.order_depths:
             amethyst_position = (
-                state.position[Product.RAINFOREST_RESIN]
-                if Product.RAINFOREST_RESIN in state.position
+                state.position[Product.AMETHYSTS]
+                if Product.AMETHYSTS in state.position
                 else 0
             )
             amethyst_take_orders, buy_order_volume, sell_order_volume = (
                 self.take_orders(
-                    Product.RAINFOREST_RESIN,
-                    state.order_depths[Product.RAINFOREST_RESIN],
-                    self.params[Product.RAINFOREST_RESIN]["fair_value"],
-                    self.params[Product.RAINFOREST_RESIN]["take_width"],
+                    Product.AMETHYSTS,
+                    state.order_depths[Product.AMETHYSTS],
+                    self.params[Product.AMETHYSTS]["fair_value"],
+                    self.params[Product.AMETHYSTS]["take_width"],
                     amethyst_position,
                 )
             )
             amethyst_clear_orders, buy_order_volume, sell_order_volume = (
                 self.clear_orders(
-                    Product.RAINFOREST_RESIN,
-                    state.order_depths[Product.RAINFOREST_RESIN],
-                    self.params[Product.RAINFOREST_RESIN]["fair_value"],
-                    self.params[Product.RAINFOREST_RESIN]["clear_width"],
+                    Product.AMETHYSTS,
+                    state.order_depths[Product.AMETHYSTS],
+                    self.params[Product.AMETHYSTS]["fair_value"],
+                    self.params[Product.AMETHYSTS]["clear_width"],
                     amethyst_position,
                     buy_order_volume,
                     sell_order_volume,
                 )
             )
             amethyst_make_orders, _, _ = self.make_amethyst_orders(
-                state.order_depths[Product.RAINFOREST_RESIN],
-                self.params[Product.RAINFOREST_RESIN]["fair_value"],
+                state.order_depths[Product.AMETHYSTS],
+                self.params[Product.AMETHYSTS]["fair_value"],
                 amethyst_position,
                 buy_order_volume,
                 sell_order_volume,
-                self.params[Product.RAINFOREST_RESIN]["volume_limit"],
+                self.params[Product.AMETHYSTS]["volume_limit"],
             )
-            result[Product.RAINFOREST_RESIN] = (
+            result[Product.AMETHYSTS] = (
                 amethyst_take_orders + amethyst_clear_orders + amethyst_make_orders
             )
 
-        if Product.STARFRUIT in self.params and Product.STARFRUIT in state.order_depths:
-            starfruit_position = (
-                state.position[Product.STARFRUIT]
-                if Product.STARFRUIT in state.position
+        if Product.KELP in self.params and Product.KELP in state.order_depths:
+            KELP_position = (
+                state.position[Product.KELP]
+                if Product.KELP in state.position
                 else 0
             )
-            starfruit_fair_value = self.starfruit_fair_value(
-                state.order_depths[Product.STARFRUIT], traderObject
+            KELP_fair_value = self.KELP_fair_value(
+                state.order_depths[Product.KELP], traderObject
             )
-            starfruit_take_orders, buy_order_volume, sell_order_volume = (
+            KELP_take_orders, buy_order_volume, sell_order_volume = (
                 self.take_orders(
-                    Product.STARFRUIT,
-                    state.order_depths[Product.STARFRUIT],
-                    starfruit_fair_value,
-                    self.params[Product.STARFRUIT]["take_width"],
-                    starfruit_position,
-                    self.params[Product.STARFRUIT]["prevent_adverse"],
-                    self.params[Product.STARFRUIT]["adverse_volume"],
+                    Product.KELP,
+                    state.order_depths[Product.KELP],
+                    KELP_fair_value,
+                    self.params[Product.KELP]["take_width"],
+                    KELP_position,
+                    self.params[Product.KELP]["prevent_adverse"],
+                    self.params[Product.KELP]["adverse_volume"],
                 )
             )
-            starfruit_clear_orders, buy_order_volume, sell_order_volume = (
+            KELP_clear_orders, buy_order_volume, sell_order_volume = (
                 self.clear_orders(
-                    Product.STARFRUIT,
-                    state.order_depths[Product.STARFRUIT],
-                    starfruit_fair_value,
-                    self.params[Product.STARFRUIT]["clear_width"],
-                    starfruit_position,
+                    Product.KELP,
+                    state.order_depths[Product.KELP],
+                    KELP_fair_value,
+                    self.params[Product.KELP]["clear_width"],
+                    KELP_position,
                     buy_order_volume,
                     sell_order_volume,
                 )
             )
-            starfruit_make_orders, _, _ = self.make_starfruit_orders(
-                state.order_depths[Product.STARFRUIT],
-                starfruit_fair_value,
-                self.params[Product.STARFRUIT]["starfruit_min_edge"],
-                starfruit_position,
+            KELP_make_orders, _, _ = self.make_KELP_orders(
+                state.order_depths[Product.KELP],
+                KELP_fair_value,
+                self.params[Product.KELP]["KELP_min_edge"],
+                KELP_position,
                 buy_order_volume,
                 sell_order_volume,
             )
-            result[Product.STARFRUIT] = (
-                starfruit_take_orders + starfruit_clear_orders + starfruit_make_orders
+            result[Product.KELP] = (
+                KELP_take_orders + KELP_clear_orders + KELP_make_orders
             )
 
         if Product.ORCHIDS in self.params and Product.ORCHIDS in state.order_depths:
