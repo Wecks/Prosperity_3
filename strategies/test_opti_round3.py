@@ -42,7 +42,7 @@ PARAMS = {
         "prevent_adverse": True,
         "adverse_volume": 15,
         "reversion_beta": -0.229,
-        "CROISSANTS_min_edge": 3,
+        "CROISSANTS_min_edge": 2,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
@@ -59,7 +59,7 @@ class Trader:
 
         self.LIMIT = {
             Product.AMETHYSTS: 20,
-            Product.CROISSANTS: 50,
+            Product.CROISSANTS: 250,
             Product.ORCHIDS: 100,
             Product.GIFT_BASKET: 60,
             Product.CHOCOLATE: 250,
