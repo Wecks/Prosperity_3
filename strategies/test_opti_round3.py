@@ -38,7 +38,7 @@ PARAMS = {
     },
     Product.CROISSANTS: {
         "take_width": 1,
-        "clear_width": 1,
+        "clear_width": 0.25,
         "prevent_adverse": True,
         "adverse_volume": 45,
         "reversion_beta": -0.069,
