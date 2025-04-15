@@ -40,8 +40,8 @@ PARAMS = {
         "take_width": 5,
         "clear_width": 0,
         "prevent_adverse": True,
-        "adverse_volume": 20,
-        "reversion_beta": -0.129,
+        "adverse_volume": 15,
+        "reversion_beta": -0.029,
         "SQUID_INK_min_edge": 2.5,
     },
     Product.ORCHIDS: {
