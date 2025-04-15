@@ -42,7 +42,7 @@ PARAMS = {
         "prevent_adverse": True,
         "adverse_volume": 15,
         "reversion_beta": -0.229,
-        "SQUID_INK_min_edge": 1.5,
+        "SQUID_INK_min_edge": 2.5,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
