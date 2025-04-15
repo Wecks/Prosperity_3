@@ -17,7 +17,7 @@ BASKETS_TRADES = "shshhhhhhhhhhhhhhhhhhhhbhhhhhhhhhhhhhhhhhhhhhbbbhhhhhhhhhhhhhh
 
 class Product:
     AMETHYSTS = "AMETHYSTS"
-    SQUID_INK = "SQUID_INK"
+    DJEMBES = "DJEMBES"
     JAMS = "JAMS"
     ORCHIDS = "ORCHIDS"
     GIFT_BASKET = "GIFT_BASKET"
@@ -37,13 +37,13 @@ PARAMS = {
         "clear_width": 0.5,
         "volume_limit": 0,
     },
-    Product.SQUID_INK: {
+    Product.DJEMBES: {
         "take_width": 5,
         "clear_width": 0,
         "prevent_adverse": True,
         "adverse_volume": 15,
         "reversion_beta": -0.129,
-        "SQUID_INK_min_edge": 2.5,
+        "DJEMBES_min_edge": 2.5,
     },
     Product.JAMS: {
         "take_width": 5,
@@ -68,7 +68,7 @@ class Trader:
 
         self.LIMIT = {
             Product.JAMS: 50,
-            Product.SQUID_INK: 50,
+            Product.DJEMBES: 50,
             Product.ORCHIDS: 100,
             Product.GIFT_BASKET: 60,
             Product.CHOCOLATE: 250,
@@ -261,7 +261,7 @@ class Trader:
 
         return buy_order_volume, sell_order_volume
 
-    def SQUID_INK_fair_value(self, order_depth: OrderDepth, traderObject) -> float:
+    def DJEMBES_fair_value(self, order_depth: OrderDepth, traderObject) -> float:
         if len(order_depth.sell_orders) != 0 and len(order_depth.buy_orders) != 0:
             best_ask = min(order_depth.sell_orders.keys())
             best_bid = max(order_depth.buy_orders.keys())
@@ -269,34 +269,34 @@ class Trader:
                 price
                 for price in order_depth.sell_orders.keys()
                 if abs(order_depth.sell_orders[price])
-                >= self.params[Product.SQUID_INK]["adverse_volume"]
+                >= self.params[Product.DJEMBES]["adverse_volume"]
             ]
             filtered_bid = [
                 price
                 for price in order_depth.buy_orders.keys()
                 if abs(order_depth.buy_orders[price])
-                >= self.params[Product.SQUID_INK]["adverse_volume"]
+                >= self.params[Product.DJEMBES]["adverse_volume"]
             ]
             mm_ask = min(filtered_ask) if len(filtered_ask) > 0 else None
             mm_bid = max(filtered_bid) if len(filtered_bid) > 0 else None
             if mm_ask == None or mm_bid == None:
-                if traderObject.get("SQUID_INK_last_price", None) == None:
+                if traderObject.get("DJEMBES_last_price", None) == None:
                     mmmid_price = (best_ask + best_bid) / 2
                 else:
-                    mmmid_price = traderObject["SQUID_INK_last_price"]
+                    mmmid_price = traderObject["DJEMBES_last_price"]
             else:
                 mmmid_price = (mm_ask + mm_bid) / 2
 
-            if traderObject.get("SQUID_INK_last_price", None) != None:
-                last_price = traderObject["SQUID_INK_last_price"]
+            if traderObject.get("DJEMBES_last_price", None) != None:
+                last_price = traderObject["DJEMBES_last_price"]
                 last_returns = (mmmid_price - last_price) / last_price
                 pred_returns = (
-                    last_returns * self.params[Product.SQUID_INK]["reversion_beta"]
+                    last_returns * self.params[Product.DJEMBES]["reversion_beta"]
                 )
                 fair = mmmid_price + (mmmid_price * pred_returns)
             else:
                 fair = mmmid_price
-            traderObject["SQUID_INK_last_price"] = mmmid_price
+            traderObject["DJEMBES_last_price"] = mmmid_price
             return fair
         return None
 
@@ -441,7 +441,7 @@ class Trader:
         )
         return orders, buy_order_volume, sell_order_volume
 
-    def make_SQUID_INK_orders(
+    def make_DJEMBES_orders(
         self,
         order_depth: OrderDepth,
         fair_value: float,
@@ -464,7 +464,7 @@ class Trader:
         baaf = min(aaf) if len(aaf) > 0 else round(fair_value + min_edge)
         bbbf = max(bbf) if len(bbf) > 0 else round(fair_value - min_edge)
         buy_order_volume, sell_order_volume = self.market_make(
-            Product.SQUID_INK,
+            Product.DJEMBES,
             orders,
             bbbf + 1,
             baaf - 1,
@@ -882,47 +882,47 @@ class Trader:
                 amethyst_take_orders + amethyst_clear_orders + amethyst_make_orders
             )
 
-        if Product.SQUID_INK in self.params and Product.SQUID_INK in state.order_depths:
-            SQUID_INK_position = (
-                state.position[Product.SQUID_INK]
-                if Product.SQUID_INK in state.position
+        if Product.DJEMBES in self.params and Product.DJEMBES in state.order_depths:
+            DJEMBES_position = (
+                state.position[Product.DJEMBES]
+                if Product.DJEMBES in state.position
                 else 0
             )
-            SQUID_INK_fair_value = self.SQUID_INK_fair_value(
-                state.order_depths[Product.SQUID_INK], traderObject
+            DJEMBES_fair_value = self.DJEMBES_fair_value(
+                state.order_depths[Product.DJEMBES], traderObject
             )
-            SQUID_INK_take_orders, buy_order_volume, sell_order_volume = (
+            DJEMBES_take_orders, buy_order_volume, sell_order_volume = (
                 self.take_orders(
-                    Product.SQUID_INK,
-                    state.order_depths[Product.SQUID_INK],
-                    SQUID_INK_fair_value,
-                    self.params[Product.SQUID_INK]["take_width"],
-                    SQUID_INK_position,
-                    self.params[Product.SQUID_INK]["prevent_adverse"],
-                    self.params[Product.SQUID_INK]["adverse_volume"],
+                    Product.DJEMBES,
+                    state.order_depths[Product.DJEMBES],
+                    DJEMBES_fair_value,
+                    self.params[Product.DJEMBES]["take_width"],
+                    DJEMBES_position,
+                    self.params[Product.DJEMBES]["prevent_adverse"],
+                    self.params[Product.DJEMBES]["adverse_volume"],
                 )
             )
-            SQUID_INK_clear_orders, buy_order_volume, sell_order_volume = (
+            DJEMBES_clear_orders, buy_order_volume, sell_order_volume = (
                 self.clear_orders(
-                    Product.SQUID_INK,
-                    state.order_depths[Product.SQUID_INK],
-                    SQUID_INK_fair_value,
-                    self.params[Product.SQUID_INK]["clear_width"],
-                    SQUID_INK_position,
+                    Product.DJEMBES,
+                    state.order_depths[Product.DJEMBES],
+                    DJEMBES_fair_value,
+                    self.params[Product.DJEMBES]["clear_width"],
+                    DJEMBES_position,
                     buy_order_volume,
                     sell_order_volume,
                 )
             )
-            SQUID_INK_make_orders, _, _ = self.make_SQUID_INK_orders(
-                state.order_depths[Product.SQUID_INK],
-                SQUID_INK_fair_value,
-                self.params[Product.SQUID_INK]["SQUID_INK_min_edge"],
-                SQUID_INK_position,
+            DJEMBES_make_orders, _, _ = self.make_DJEMBES_orders(
+                state.order_depths[Product.DJEMBES],
+                DJEMBES_fair_value,
+                self.params[Product.DJEMBES]["DJEMBES_min_edge"],
+                DJEMBES_position,
                 buy_order_volume,
                 sell_order_volume,
             )
-            result[Product.SQUID_INK] = (
-                SQUID_INK_take_orders + SQUID_INK_clear_orders + SQUID_INK_make_orders
+            result[Product.DJEMBES] = (
+                DJEMBES_take_orders + DJEMBES_clear_orders + DJEMBES_make_orders
             )
 
         if Product.JAMS in self.params and Product.JAMS in state.order_depths:
