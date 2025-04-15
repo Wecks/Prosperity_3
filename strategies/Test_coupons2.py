@@ -966,6 +966,7 @@ class Trader:
             )
             result[Product.JAMS] = (
                 JAMS_take_orders + JAMS_clear_orders + JAMS_make_orders
+            )
 
         if Product.ORCHIDS in self.params and Product.ORCHIDS in state.order_depths:
             orchids_position = (
