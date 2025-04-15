@@ -37,12 +37,12 @@ PARAMS = {
         "volume_limit": 0,
     },
     Product.CROISSANTS: {
-        "take_width": 1,
+        "take_width": 0.6,
         "clear_width": 0,
         "prevent_adverse": True,
         "adverse_volume": 45,
         "reversion_beta": -0.069,
-        "CROISSANTS_min_edge": 1.5,
+        "CROISSANTS_min_edge": 1.8,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
