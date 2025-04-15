@@ -41,7 +41,7 @@ PARAMS = {
         "clear_width": 0,
         "prevent_adverse": True,
         "adverse_volume": 15,
-        "reversion_beta": -0.329,
+        "reversion_beta": -0.829,
         "KELP_min_edge": 2,
     },
     Product.ORCHIDS: {
