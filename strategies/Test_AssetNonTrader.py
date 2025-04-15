@@ -15,7 +15,7 @@ class Product:
     ROSES = "ROSES"
 
 
-PARAMS = {Product.DJEMBES: {"min_width": 0, "max_width": 8, "mm_min_volume": 10}}
+PARAMS = {Product.DJEMBES: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
 
 
 class Trader:
@@ -32,7 +32,7 @@ class Trader:
             traderObject = jsonpickle.decode(state.traderData)
 
         result = {}
-        conversions = 0
+        conversions = 1
 
         if (
             Product.DJEMBES in self.params
