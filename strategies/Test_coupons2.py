@@ -52,7 +52,7 @@ PARAMS = {
         "adverse_volume": 20,
         "reversion_beta": -0.229,
         "JAMS_min_edge": 2.0,
-    }    
+    },    
     Product.ORCHIDS: {
         "make_edge": 2,
         "make_probability": 0.800,
