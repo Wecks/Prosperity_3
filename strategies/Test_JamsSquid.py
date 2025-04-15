@@ -704,7 +704,7 @@ class KelpStrategy(MarketMakingStrategy):
 class SquidInkStrategy(Strategy):
     PARAMS = {
        "take_width": 5,
-       "clear_width": 0.2,
+       "clear_width": 0.1,
        "prevent_adverse": True,
        "adverse_volume": 15,
        "reversion_beta": -0.129,
