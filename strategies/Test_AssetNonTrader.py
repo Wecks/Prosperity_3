@@ -40,9 +40,9 @@ PARAMS = {
         "take_width": 5,
         "clear_width": 0,
         "prevent_adverse": True,
-        "adverse_volume": 15,
+        "adverse_volume": 20,
         "reversion_beta": -0.229,
-        "JAMS_min_edge": 1.0,
+        "JAMS_min_edge": 2.0,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
