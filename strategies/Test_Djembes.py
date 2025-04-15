@@ -28,7 +28,7 @@ class Trader:
 
     def run(self, state: TradingState):
         traderObject = {}
-        if state.traderData != None and state.traderData != "":
+        if state.traderData is not None and state.traderData != "":
             traderObject = jsonpickle.decode(state.traderData)
 
         result = {}
@@ -62,8 +62,8 @@ class Trader:
             if len(mm_bids) > 0 and len(mm_asks) > 0:
                 best_mm_bid = max(mm_bids)
                 best_mm_ask = min(mm_asks)
-                # truncate
-                mm_mid = int((best_mm_bid + best_mm_ask)/2)
+                # On calcule le milieu en tronquant au nombre entier
+                mm_mid = int((best_mm_bid + best_mm_ask) / 2)
 
                 num_levels = basket_params['max_width'] - basket_params['min_width'] + 1
                 num_buy_levels = min(num_levels, basket_limit - basket_position)
@@ -79,3 +79,16 @@ class Trader:
         traderData = jsonpickle.encode(traderObject)
 
         return result, conversions, traderData
+
+
+# --- Correction de la définition de "days" ---
+# Le framework (fichier __main__.py) attend une liste d'arguments dont les éléments
+# devant être convertis en entier contiennent uniquement des chiffres.
+# Ici, on remplace '3prosperity3bt' par '3' (par exemple) :
+
+days = ['3', './strategies/Djembes.py', '3']
+
+if __name__ == '__main__':
+    # Exemple d'utilisation : on affiche les paramètres corrigés.
+    print("Les paramètres 'days' sont corrigés :", days)
+    # Ici, le Trader serait lancé en passant ces paramètres au framework.
