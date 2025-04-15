@@ -17,7 +17,7 @@ BASKETS_TRADES = "shshhhhhhhhhhhhhhhhhhhhbhhhhhhhhhhhhhhhhhhhhhbbbhhhhhhhhhhhhhh
 
 class Product:
     AMETHYSTS = "AMETHYSTS"
-    KELP = "KELP"
+    CROISSANTS = "CROISSANTS"
     ORCHIDS = "ORCHIDS"
     GIFT_BASKET = "GIFT_BASKET"
     CHOCOLATE = "CHOCOLATE"
@@ -36,13 +36,13 @@ PARAMS = {
         "clear_width": 0.5,
         "volume_limit": 0,
     },
-    Product.KELP: {
+    Product.CROISSANTS: {
         "take_width": 1,
         "clear_width": 0,
         "prevent_adverse": True,
         "adverse_volume": 15,
         "reversion_beta": -0.229,
-        "KELP_min_edge": 2,
+        "CROISSANTS_min_edge": 2,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
@@ -59,7 +59,7 @@ class Trader:
 
         self.LIMIT = {
             Product.AMETHYSTS: 20,
-            Product.KELP: 50,
+            Product.CROISSANTS: 50,
             Product.ORCHIDS: 100,
             Product.GIFT_BASKET: 60,
             Product.CHOCOLATE: 250,
@@ -252,7 +252,7 @@ class Trader:
 
         return buy_order_volume, sell_order_volume
 
-    def KELP_fair_value(self, order_depth: OrderDepth, traderObject) -> float:
+    def CROISSANTS_fair_value(self, order_depth: OrderDepth, traderObject) -> float:
         if len(order_depth.sell_orders) != 0 and len(order_depth.buy_orders) != 0:
             best_ask = min(order_depth.sell_orders.keys())
             best_bid = max(order_depth.buy_orders.keys())
@@ -260,34 +260,34 @@ class Trader:
                 price
                 for price in order_depth.sell_orders.keys()
                 if abs(order_depth.sell_orders[price])
-                >= self.params[Product.KELP]["adverse_volume"]
+                >= self.params[Product.CROISSANTS]["adverse_volume"]
             ]
             filtered_bid = [
                 price
                 for price in order_depth.buy_orders.keys()
                 if abs(order_depth.buy_orders[price])
-                >= self.params[Product.KELP]["adverse_volume"]
+                >= self.params[Product.CROISSANTS]["adverse_volume"]
             ]
             mm_ask = min(filtered_ask) if len(filtered_ask) > 0 else None
             mm_bid = max(filtered_bid) if len(filtered_bid) > 0 else None
             if mm_ask == None or mm_bid == None:
-                if traderObject.get("KELP_last_price", None) == None:
+                if traderObject.get("CROISSANTS_last_price", None) == None:
                     mmmid_price = (best_ask + best_bid) / 2
                 else:
-                    mmmid_price = traderObject["KELP_last_price"]
+                    mmmid_price = traderObject["CROISSANTS_last_price"]
             else:
                 mmmid_price = (mm_ask + mm_bid) / 2
 
-            if traderObject.get("KELP_last_price", None) != None:
-                last_price = traderObject["KELP_last_price"]
+            if traderObject.get("CROISSANTS_last_price", None) != None:
+                last_price = traderObject["CROISSANTS_last_price"]
                 last_returns = (mmmid_price - last_price) / last_price
                 pred_returns = (
-                    last_returns * self.params[Product.KELP]["reversion_beta"]
+                    last_returns * self.params[Product.CROISSANTS]["reversion_beta"]
                 )
                 fair = mmmid_price + (mmmid_price * pred_returns)
             else:
                 fair = mmmid_price
-            traderObject["KELP_last_price"] = mmmid_price
+            traderObject["CROISSANTS_last_price"] = mmmid_price
             return fair
         return None
 
@@ -393,7 +393,7 @@ class Trader:
         )
         return orders, buy_order_volume, sell_order_volume
 
-    def make_KELP_orders(
+    def make_CROISSANTS_orders(
         self,
         order_depth: OrderDepth,
         fair_value: float,
@@ -416,7 +416,7 @@ class Trader:
         baaf = min(aaf) if len(aaf) > 0 else round(fair_value + min_edge)
         bbbf = max(bbf) if len(bbf) > 0 else round(fair_value - min_edge)
         buy_order_volume, sell_order_volume = self.market_make(
-            Product.KELP,
+            Product.CROISSANTS,
             orders,
             bbbf + 1,
             baaf - 1,
@@ -800,47 +800,47 @@ class Trader:
                 amethyst_take_orders + amethyst_clear_orders + amethyst_make_orders
             )
 
-        if Product.KELP in self.params and Product.KELP in state.order_depths:
-            KELP_position = (
-                state.position[Product.KELP]
-                if Product.KELP in state.position
+        if Product.CROISSANTS in self.params and Product.CROISSANTS in state.order_depths:
+            CROISSANTS_position = (
+                state.position[Product.CROISSANTS]
+                if Product.CROISSANTS in state.position
                 else 0
             )
-            KELP_fair_value = self.KELP_fair_value(
-                state.order_depths[Product.KELP], traderObject
+            CROISSANTS_fair_value = self.CROISSANTS_fair_value(
+                state.order_depths[Product.CROISSANTS], traderObject
             )
-            KELP_take_orders, buy_order_volume, sell_order_volume = (
+            CROISSANTS_take_orders, buy_order_volume, sell_order_volume = (
                 self.take_orders(
-                    Product.KELP,
-                    state.order_depths[Product.KELP],
-                    KELP_fair_value,
-                    self.params[Product.KELP]["take_width"],
-                    KELP_position,
-                    self.params[Product.KELP]["prevent_adverse"],
-                    self.params[Product.KELP]["adverse_volume"],
+                    Product.CROISSANTS,
+                    state.order_depths[Product.CROISSANTS],
+                    CROISSANTS_fair_value,
+                    self.params[Product.CROISSANTS]["take_width"],
+                    CROISSANTS_position,
+                    self.params[Product.CROISSANTS]["prevent_adverse"],
+                    self.params[Product.CROISSANTS]["adverse_volume"],
                 )
             )
-            KELP_clear_orders, buy_order_volume, sell_order_volume = (
+            CROISSANTS_clear_orders, buy_order_volume, sell_order_volume = (
                 self.clear_orders(
-                    Product.KELP,
-                    state.order_depths[Product.KELP],
-                    KELP_fair_value,
-                    self.params[Product.KELP]["clear_width"],
-                    KELP_position,
+                    Product.CROISSANTS,
+                    state.order_depths[Product.CROISSANTS],
+                    CROISSANTS_fair_value,
+                    self.params[Product.CROISSANTS]["clear_width"],
+                    CROISSANTS_position,
                     buy_order_volume,
                     sell_order_volume,
                 )
             )
-            KELP_make_orders, _, _ = self.make_KELP_orders(
-                state.order_depths[Product.KELP],
-                KELP_fair_value,
-                self.params[Product.KELP]["KELP_min_edge"],
-                KELP_position,
+            CROISSANTS_make_orders, _, _ = self.make_CROISSANTS_orders(
+                state.order_depths[Product.CROISSANTS],
+                CROISSANTS_fair_value,
+                self.params[Product.CROISSANTS]["CROISSANTS_min_edge"],
+                CROISSANTS_position,
                 buy_order_volume,
                 sell_order_volume,
             )
-            result[Product.KELP] = (
-                KELP_take_orders + KELP_clear_orders + KELP_make_orders
+            result[Product.CROISSANTS] = (
+                CROISSANTS_take_orders + CROISSANTS_clear_orders + CROISSANTS_make_orders
             )
 
         if Product.ORCHIDS in self.params and Product.ORCHIDS in state.order_depths:
