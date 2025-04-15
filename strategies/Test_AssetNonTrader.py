@@ -41,8 +41,8 @@ PARAMS = {
         "clear_width": 0,
         "prevent_adverse": True,
         "adverse_volume": 15,
-        "reversion_beta": -0.129,
-        "JAMS_min_edge": 2.5,
+        "reversion_beta": -0.229,
+        "JAMS_min_edge": 2.0,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
