@@ -40,7 +40,7 @@ PARAMS = {
         "take_width": 5,
         "clear_width": 0,
         "prevent_adverse": True,
-        "adverse_volume": 35,
+        "adverse_volume": 20,
         "reversion_beta": -0.129,
         "SQUID_INK_min_edge": 2.5,
     },
