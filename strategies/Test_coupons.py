@@ -59,7 +59,8 @@ class Logger:
     def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
         compressed = []
         for listing in listings.values():
-            compressed.append([listing["symbol"], listing["product"], listing["denomination"]])
+            compressed.append([listing.symbol, listing.product, listing.denomination])
+
 
         return compressed
 
