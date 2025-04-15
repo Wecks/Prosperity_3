@@ -41,7 +41,7 @@ PARAMS = {
         "clear_width": 0,
         "prevent_adverse": True,
         "adverse_volume": 15,
-        "reversion_beta": -0.029,
+        "reversion_beta": -0.229,
         "KELP_min_edge": 2,
     },
     Product.ORCHIDS: {
@@ -59,7 +59,7 @@ class Trader:
 
         self.LIMIT = {
             Product.AMETHYSTS: 20,
-            Product.KELP: 20,
+            Product.KELP: 50,
             Product.ORCHIDS: 100,
             Product.GIFT_BASKET: 60,
             Product.CHOCOLATE: 250,
