@@ -40,7 +40,7 @@ PARAMS = {
         "take_width": 1,
         "clear_width": 0.25,
         "prevent_adverse": True,
-        "adverse_volume": 90,
+        "adverse_volume": 25,
         "reversion_beta": -0.069,
         "CROISSANTS_min_edge": 1.8,
     },
