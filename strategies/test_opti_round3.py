@@ -82,7 +82,7 @@ class Trader:
             Product.CHOCOLATE: 0.55,
             Product.GIFT_BASKET: 6,
             Product.STRAWBERRIES: 0.55,
-            Product.DJEMBES: 0.85,
+            Product.DJEMBES: 3,
             Product.COCONUT: 0.99,
             Product.COCONUT_COUPON: 0.6,
         }
