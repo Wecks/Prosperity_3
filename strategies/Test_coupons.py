@@ -331,15 +331,15 @@ class RosesStrategy(SignalStrategy):
 
 class GiftBasketStrategy(SignalStrategy):
     def get_signal(self, state: TradingState) -> Signal | None:
-        if any(symbol not in state.order_depths for symbol in ["VOLCANIK_ROCK", "STRAWBERRIES", "ROSES", "GIFT_BASKET"]):
+        if any(symbol not in state.order_depths for symbol in ["VOLCANIK_ROCK", "VOLCANIK_ROCK", "ROSES", "GIFT_BASKET"]):
             return
 
         VOLCANIK_ROCK = self.get_mid_price(state, "VOLCANIK_ROCK")
-        strawberries = self.get_mid_price(state, "STRAWBERRIES")
+        VOLCANIK_ROCK = self.get_mid_price(state, "VOLCANIK_ROCK")
         roses = self.get_mid_price(state, "ROSES")
         gift_basket = self.get_mid_price(state, "GIFT_BASKET")
 
-        diff = gift_basket - 4 * VOLCANIK_ROCK - 6 * strawberries - roses
+        diff = gift_basket - 4 * VOLCANIK_ROCK - 6 * VOLCANIK_ROCK - roses
 
         # if diff < 260:
         #     return Signal.LONG
@@ -348,7 +348,7 @@ class GiftBasketStrategy(SignalStrategy):
 
         long_threshold, short_threshold = {
             "VOLCANIK_ROCK": (230, 355),
-            "STRAWBERRIES": (195, 485),
+            "VOLCANIK_ROCK": (195, 485),
             "ROSES": (325, 370),
             "GIFT_BASKET": (290, 355),
         }[self.symbol]
@@ -360,7 +360,7 @@ class GiftBasketStrategy(SignalStrategy):
 
         # premium, threshold = {
         #     "VOLCANIK_ROCK": (285, 0.19),
-        #     "STRAWBERRIES": (340, 0.43),
+        #     "VOLCANIK_ROCK": (340, 0.43),
         #     "ROSES": (350, 0.05),
         #     "GIFT_BASKET": (325, 0.12),
         # }[self.symbol]
@@ -452,7 +452,7 @@ class Trader:
             "VOLCANIK_ROCK": 20,
             "ORCHIDS": 100,
             "VOLCANIK_ROCK": 250,
-            "STRAWBERRIES": 350,
+            "VOLCANIK_ROCK": 350,
             "ROSES": 60,
             "GIFT_BASKET": 60,
             "VOLCANIK_ROCK": 300,
@@ -464,7 +464,7 @@ class Trader:
             "VOLCANIK_ROCK": VOLCANIK_ROCKStrategy,
             "ORCHIDS": OrchidsStrategy,
             "VOLCANIK_ROCK": VOLCANIK_ROCKStrategy,
-            "STRAWBERRIES": GiftBasketStrategy,
+            "VOLCANIK_ROCK": GiftBasketStrategy,
             "ROSES": RosesStrategy,
             "GIFT_BASKET": GiftBasketStrategy,
             # "VOLCANIK_ROCK": VOLCANIK_ROCKStrategy,
