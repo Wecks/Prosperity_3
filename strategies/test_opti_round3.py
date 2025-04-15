@@ -40,7 +40,7 @@ PARAMS = {
         "take_width": 1,
         "clear_width": 0,
         "prevent_adverse": True,
-        "adverse_volume": 15,
+        "adverse_volume": 10,
         "reversion_beta": -0.229,
         "KELP_min_edge": 2,
     },
