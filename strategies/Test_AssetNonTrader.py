@@ -9,13 +9,13 @@ class Product:
     AMETHYSTS = "AMETHYSTS"
     STARFRUIT = "STARFRUIT"
     ORCHIDS = "ORCHIDS"
-    DJEMBES = "DJEMBES"
+    VOLCANIK_ROCK = "VOLCANIK_ROCK"
     CHOCOLATE = "CHOCOLATE"
     STRAWBERRIES = "STRAWBERRIES"
     ROSES = "ROSES"
 
 
-PARAMS = {Product.DJEMBES: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
+PARAMS = {Product.VOLCANIK_ROCK: {"min_width": 1, "max_width": 8, "mm_min_volume": 10}}
 
 
 class Trader:
@@ -24,7 +24,7 @@ class Trader:
             params = PARAMS
         self.params = params
 
-        self.LIMIT = {Product.DJEMBES: 60}
+        self.LIMIT = {Product.VOLCANIK_ROCK: 60}
 
     def run(self, state: TradingState):
         traderObject = {}
@@ -32,22 +32,22 @@ class Trader:
             traderObject = jsonpickle.decode(state.traderData)
 
         result = {}
-        conversions = 1
+        conversions = 0
 
         if (
-            Product.DJEMBES in self.params
-            and Product.DJEMBES in state.order_depths
+            Product.VOLCANIK_ROCK in self.params
+            and Product.VOLCANIK_ROCK in state.order_depths
         ):
-            basket_params = self.params[Product.DJEMBES]
-            basket_limit = self.LIMIT[Product.DJEMBES]
+            basket_params = self.params[Product.VOLCANIK_ROCK]
+            basket_limit = self.LIMIT[Product.VOLCANIK_ROCK]
 
             basket_position = (
-                state.position[Product.DJEMBES]
-                if Product.DJEMBES in state.position
+                state.position[Product.VOLCANIK_ROCK]
+                if Product.VOLCANIK_ROCK in state.position
                 else 0
             )
 
-            basket_order_depth = state.order_depths[Product.DJEMBES]
+            basket_order_depth = state.order_depths[Product.VOLCANIK_ROCK]
 
             mm_bids = [
                 level
@@ -71,11 +71,11 @@ class Trader:
 
                 basket_orders = []
                 for level in range(1, num_buy_levels + 1):
-                    basket_orders.append(Order(Product.DJEMBES, mm_mid - level, 1))
+                    basket_orders.append(Order(Product.VOLCANIK_ROCK, mm_mid - level, 1))
                 for level in range(1, num_sell_levels + 1):
-                    basket_orders.append(Order(Product.DJEMBES, mm_mid + level, -1))
+                    basket_orders.append(Order(Product.VOLCANIK_ROCK, mm_mid + level, -1))
                 
-                result[Product.DJEMBES] = basket_orders
+                result[Product.VOLCANIK_ROCK] = basket_orders
         traderData = jsonpickle.encode(traderObject)
 
         return result, conversions, traderData
