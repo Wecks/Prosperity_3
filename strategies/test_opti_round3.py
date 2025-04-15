@@ -59,7 +59,7 @@ class Trader:
 
         self.LIMIT = {
             Product.AMETHYSTS: 20,
-            Product.SQUID_INK: 50,
+            Product.SQUID_INK: 20,
             Product.ORCHIDS: 100,
             Product.GIFT_BASKET: 60,
             Product.CHOCOLATE: 250,
