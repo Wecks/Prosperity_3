@@ -42,7 +42,7 @@ PARAMS = {
         "prevent_adverse": True,
         "adverse_volume": 45,
         "reversion_beta": -0.069,
-        "CROISSANTS_min_edge": 2,
+        "CROISSANTS_min_edge": 1.8,
     },
     Product.ORCHIDS: {
         "make_edge": 2,
