@@ -26,10 +26,10 @@ class Logger:
         max_item_length = (self.max_log_length - base_length) // 3
 
         print(self.to_json([
-            self.compress_state(state, self.truncate(state.traderData, max_item_length)),
+            self.compress_state(state, self.truncate(state.traderData or "", max_item_length)),
             self.compress_orders(orders),
             conversions,
-            self.truncate(trader_data, max_item_length),
+            self.truncate(trader_data or "", max_item_length),
             self.truncate(self.logs, max_item_length),
         ]))
 
