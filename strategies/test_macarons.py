@@ -28,7 +28,6 @@ class Logger:
         ]))
         max_item_length = (self.max_log_length - base_length) // 3
 
-        # Émission du JSON final
         print(self.to_json([
             self.compress_state(state, self.truncate(state.traderData, max_item_length)),
             self.compress_orders(orders),
@@ -51,7 +50,6 @@ class Logger:
         ]
 
     def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
-        # Utilisation des attributs de Listing, pas d'indexation par clé
         return [
             [listing.symbol, listing.product, listing.denomination]
             for listing in listings.values()
@@ -78,7 +76,7 @@ class Logger:
         return result
 
     def compress_observations(self, observations: Observation) -> list[Any]:
-        conv: dict[str, list[Any]] = {}
+        conv: dict[Symbol, list[Any]] = {}
         for prod, obs in observations.conversionObservations.items():
             conv[prod] = [
                 obs.bidPrice,
@@ -86,8 +84,8 @@ class Logger:
                 obs.transportFees,
                 obs.exportTariff,
                 obs.importTariff,
-                obs.sunlight,
-                obs.humidity,
+                obs.sugarPrice,       # Correction ici
+                obs.sunlightIndex,    # et ici :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
             ]
         return [observations.plainValueObservations, conv]
 
@@ -105,6 +103,7 @@ class Logger:
         return value if len(value) <= max_length else value[: max_length - 3] + "."
 
 logger = Logger()
+
 
 class Strategy:
     def __init__(self, symbol: Symbol, limit: int) -> None:
