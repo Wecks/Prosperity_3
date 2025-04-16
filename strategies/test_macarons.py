@@ -51,9 +51,10 @@ class Logger:
     def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
         compressed = []
         for listing in listings.values():
-            compressed.append([listing["symbol"], listing["product"], listing["denomination"]])
-
+        # On accède aux attributs de Listing comme des propriétés
+            compressed.append([listing.symbol, listing.product, listing.denomination])
         return compressed
+
 
     def compress_order_depths(self, order_depths: dict[Symbol, OrderDepth]) -> dict[Symbol, list[Any]]:
         compressed = {}
