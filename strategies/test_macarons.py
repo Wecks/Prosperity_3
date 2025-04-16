@@ -1,7 +1,16 @@
 import json
 from abc import abstractmethod
 from collections import deque
-from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder, Symbol, Trade, TradingState
+from datamodel import (
+    Listing,
+    Observation,
+    Order,
+    OrderDepth,
+    ProsperityEncoder,
+    Symbol,
+    Trade,
+    TradingState,
+)
 from typing import Any, TypeAlias
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
@@ -14,28 +23,47 @@ class Logger:
     def print(self, *objects: Any, sep: str = " ", end: str = "\n") -> None:
         self.logs += sep.join(map(str, objects)) + end
 
-    def flush(self, state: TradingState, orders: dict[Symbol, list[Order]], conversions: int, trader_data: str) -> None:
-        base_length = len(self.to_json([
-            self.compress_state(state, ""),
-            self.compress_orders(orders),
-            conversions,
-            "",
-            "",
-        ]))
+    def flush(
+        self,
+        state: TradingState,
+        orders: dict[Symbol, list[Order]],
+        conversions: int,
+        trader_data: str,
+    ) -> None:
+        base_length = len(
+            self.to_json(
+                [
+                    self.compress_state(state, ""),
+                    self.compress_orders(orders),
+                    conversions,
+                    "",
+                    "",
+                ]
+            )
+        )
 
+        # On répartit la place restante sur traderData, state.traderData et self.logs
         max_item_length = (self.max_log_length - base_length) // 3
 
-        print(self.to_json([
-            self.compress_state(state, self.truncate(state.traderData, max_item_length)),
-            self.compress_orders(orders),
-            conversions,
-            self.truncate(trader_data, max_item_length),
-            self.truncate(self.logs, max_item_length),
-        ]))
+        print(
+            self.to_json(
+                [
+                    self.compress_state(
+                        state, self.truncate(state.traderData, max_item_length)
+                    ),
+                    self.compress_orders(orders),
+                    conversions,
+                    self.truncate(trader_data, max_item_length),
+                    self.truncate(self.logs, max_item_length),
+                ]
+            )
+        )
 
         self.logs = ""
 
-    def compress_state(self, state: TradingState, trader_data: str) -> list[Any]:
+    def compress_state(
+        self, state: TradingState, trader_data: str
+    ) -> list[Any]:
         return [
             state.timestamp,
             trader_data,
@@ -47,48 +75,67 @@ class Logger:
             self.compress_observations(state.observations),
         ]
 
-    def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
-        compressed = []
+    def compress_listings(
+        self, listings: dict[Symbol, Listing]
+    ) -> list[list[Any]]:
+        compressed: list[list[Any]] = []
         for listing in listings.values():
-            compressed.append([listing.symbol, listing.product, listing.denomination])
+            compressed.append(
+                [listing.symbol, listing.product, listing.denomination]
+            )
         return compressed
 
-    def compress_order_depths(self, order_depths: dict[Symbol, OrderDepth]) -> dict[Symbol, list[Any]]:
-        compressed = {}
-        for symbol, order_depth in order_depths.items():
-            compressed[symbol] = [order_depth.buy_orders, order_depth.sell_orders]
+    def compress_order_depths(
+        self, order_depths: dict[Symbol, OrderDepth]
+    ) -> dict[Symbol, list[Any]]:
+        compressed: dict[Symbol, list[Any]] = {}
+        for symbol, od in order_depths.items():
+            compressed[symbol] = [od.buy_orders, od.sell_orders]
         return compressed
 
-    def compress_trades(self, trades: dict[Symbol, list[Trade]]) -> list[list[Any]]:
-        compressed = []
+    def compress_trades(
+        self, trades: dict[Symbol, list[Trade]]
+    ) -> list[list[Any]]:
+        compressed: list[list[Any]] = []
         for arr in trades.values():
             for trade in arr:
-                compressed.append([
-                    trade.symbol,
-                    trade.price,
-                    trade.quantity,
-                    trade.buyer,
-                    trade.seller,
-                    trade.timestamp,
-                ])
+                compressed.append(
+                    [
+                        trade.symbol,
+                        trade.price,
+                        trade.quantity,
+                        trade.buyer,
+                        trade.seller,
+                        trade.timestamp,
+                    ]
+                )
         return compressed
 
-    def compress_observations(self, observations: Observation) -> list[Any]:
-        conversion_observations = {}
-        for product, observation in observations.conversionObservations.items():
-            conversion_observations[product] = [
-                observation.bidPrice,
-                observation.askPrice,
-                observation.transportFees,
-                observation.exportTariff,
-                observation.importTariff,
-                observation.sunlightIndex,
-                observation.plainValueObservations.get("Sugar Price", None),
-            ]
-        return [observations.plainValueObservations, conversion_observations]
+    def compress_observations(
+        self, observations: Observation
+    ) -> list[Any]:
+        # On extrait d'abord plainValueObservations (dict simple)
+        simple = observations.plainValueObservations
 
-    def compress_orders(self, orders: dict[Symbol, list[Order]]) -> list[list[Any]]:
-        compressed = []
+        # Puis on reconstruit la partie conversionObservations correctement
+        conv_obs: dict[str, list[Any]] = {}
+        for product, obs in observations.conversionObservations.items():
+            conv_obs[product] = [
+                obs.bidPrice,
+                obs.askPrice,
+                obs.transportFees,
+                obs.exportTariff,
+                obs.importTariff,
+                obs.sunlightIndex,  # maintenant correct
+                obs.sugarPrice,     # on utilise sugarPrice, pas plainValueObservations
+            ]
+
+        return [simple, conv_obs]
+
+    def compress_orders(
+        self, orders: dict[Symbol, list[Order]]
+    ) -> list[list[Any]]:
+        compressed: list[list[Any]] = []
         for arr in orders.values():
             for order in arr:
                 compressed.append([order.symbol, order.price, order.quantity])
@@ -100,7 +147,7 @@ class Logger:
     def truncate(self, value: str, max_length: int) -> str:
         if len(value) <= max_length:
             return value
-        return value[:max_length - 3] + "..."
+        return value[: max_length - 3] + "..."
 
 logger = Logger()
 
@@ -114,7 +161,7 @@ class Strategy:
         raise NotImplementedError()
 
     def run(self, state: TradingState) -> tuple[list[Order], int]:
-        self.orders = []
+        self.orders: list[Order] = []
         self.conversions = 0
         self.act(state)
         return self.orders, self.conversions
@@ -146,11 +193,9 @@ class MarketMakingStrategy(Strategy):
 
     def act(self, state: TradingState) -> None:
         true_value = self.get_true_value(state)
-
-        order_depth = state.order_depths[self.symbol]
-        buy_orders = sorted(order_depth.buy_orders.items(), reverse=True)
-        sell_orders = sorted(order_depth.sell_orders.items())
-
+        od = state.order_depths[self.symbol]
+        buy_orders = sorted(od.buy_orders.items(), reverse=True)
+        sell_orders = sorted(od.sell_orders.items())
         position = state.position.get(self.symbol, 0)
         to_buy = self.limit - position
         to_sell = self.limit + position
@@ -159,51 +204,63 @@ class MarketMakingStrategy(Strategy):
         if len(self.window) > self.window_size:
             self.window.popleft()
 
-        soft_liquidate = len(self.window) == self.window_size and sum(self.window) >= self.window_size / 2 and self.window[-1]
+        soft_liquidate = (
+            len(self.window) == self.window_size
+            and sum(self.window) >= self.window_size / 2
+            and self.window[-1]
+        )
         hard_liquidate = len(self.window) == self.window_size and all(self.window)
 
-        max_buy_price = true_value - 1 if position > self.limit * 0.5 else true_value
-        min_sell_price = true_value + 1 if position < self.limit * -0.5 else true_value
+        max_buy_price = (
+            true_value - 1
+            if position > self.limit * 0.5
+            else true_value
+        )
+        min_sell_price = (
+            true_value + 1
+            if position < self.limit * -0.5
+            else true_value
+        )
 
         for price, volume in sell_orders:
             if to_buy > 0 and price <= max_buy_price:
-                quantity = min(to_buy, -volume)
-                self.buy(price, quantity)
-                to_buy -= quantity
+                qty = min(to_buy, -volume)
+                self.buy(price, qty)
+                to_buy -= qty
 
         if to_buy > 0 and hard_liquidate:
-            quantity = to_buy // 2
-            self.buy(true_value, quantity)
-            to_buy -= quantity
+            qty = to_buy // 2
+            self.buy(true_value, qty)
+            to_buy -= qty
 
         if to_buy > 0 and soft_liquidate:
-            quantity = to_buy // 2
-            self.buy(true_value - 2, quantity)
-            to_buy -= quantity
+            qty = to_buy // 2
+            self.buy(true_value - 2, qty)
+            to_buy -= qty
 
-        if to_buy > 0 and buy_orders:
-            popular_buy_price = max(buy_orders, key=lambda tup: tup[1])[0]
+        if to_buy > 0:
+            popular_buy_price = max(buy_orders, key=lambda t: t[1])[0]
             price = min(max_buy_price, popular_buy_price + 1)
             self.buy(price, to_buy)
 
         for price, volume in buy_orders:
             if to_sell > 0 and price >= min_sell_price:
-                quantity = min(to_sell, volume)
-                self.sell(price, quantity)
-                to_sell -= quantity
+                qty = min(to_sell, volume)
+                self.sell(price, qty)
+                to_sell -= qty
 
         if to_sell > 0 and hard_liquidate:
-            quantity = to_sell // 2
-            self.sell(true_value, quantity)
-            to_sell -= quantity
+            qty = to_sell // 2
+            self.sell(true_value, qty)
+            to_sell -= qty
 
         if to_sell > 0 and soft_liquidate:
-            quantity = to_sell // 2
-            self.sell(true_value + 2, quantity)
-            to_sell -= quantity
+            qty = to_sell // 2
+            self.sell(true_value + 2, qty)
+            to_sell -= qty
 
-        if to_sell > 0 and sell_orders:
-            popular_sell_price = min(sell_orders, key=lambda tup: tup[1])[0]
+        if to_sell > 0:
+            popular_sell_price = min(sell_orders, key=lambda t: t[1])[0]
             price = max(min_sell_price, popular_sell_price - 1)
             self.sell(price, to_sell)
 
@@ -219,22 +276,20 @@ class AmethystsStrategy(MarketMakingStrategy):
 
 class StarfruitStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
-        order_depth = state.order_depths[self.symbol]
-        buy_orders = sorted(order_depth.buy_orders.items(), reverse=True)
-        sell_orders = sorted(order_depth.sell_orders.items())
-        popular_buy_price = max(buy_orders, key=lambda tup: tup[1])[0]
-        popular_sell_price = min(sell_orders, key=lambda tup: tup[1])[0]
-        return round((popular_buy_price + popular_sell_price) / 2)
+        od = state.order_depths[self.symbol]
+        buy_orders = sorted(od.buy_orders.items(), reverse=True)
+        sell_orders = sorted(od.sell_orders.items())
+        pb = max(buy_orders, key=lambda t: t[1])[0]
+        ps = min(sell_orders, key=lambda t: t[1])[0]
+        return round((pb + ps) / 2)
 
 class MAGNIFICENT_MACARONSStrategy(Strategy):
     def act(self, state: TradingState) -> None:
-        position = state.position.get(self.symbol, 0)
-        self.convert(-1 * position)
-
-        obs = state.observations.conversionObservations.get(self.symbol, None)
-        if obs is None:
+        pos = state.position.get(self.symbol, 0)
+        self.convert(-pos)
+        obs = state.observations.conversionObservations.get(self.symbol)
+        if not obs:
             return
-
         buy_price = obs.askPrice + obs.transportFees + obs.importTariff
         self.sell(max(int(obs.bidPrice - 0.5), int(buy_price + 1)), self.limit)
 
@@ -245,32 +300,35 @@ class Trader:
             "STARFRUIT": 20,
             "MAGNIFICENT_MACARONS": 100,
         }
-
-        self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
+        strat_map = {
             "AMETHYSTS": AmethystsStrategy,
             "STARFRUIT": StarfruitStrategy,
             "MAGNIFICENT_MACARONS": MAGNIFICENT_MACARONSStrategy,
-        }.items()}
+        }
+        self.strategies = {
+            sym: cls(sym, limits[sym]) for sym, cls in strat_map.items()
+        }
 
-    def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:
-        orders = {}
+    def run(
+        self, state: TradingState
+    ) -> tuple[dict[Symbol, list[Order]], int, str]:
+        orders: dict[Symbol, list[Order]] = {}
         conversions = 0
 
-        old_trader_data = json.loads(state.traderData) if state.traderData != "" else {}
-        new_trader_data = {}
+        old_data = (
+            json.loads(state.traderData) if state.traderData else {}
+        )
+        new_data: dict[Symbol, JSON] = {}
 
-        for symbol, strategy in self.strategies.items():
-            if symbol in old_trader_data:
-                strategy.load(old_trader_data[symbol])
+        for sym, strat in self.strategies.items():
+            if sym in old_data:
+                strat.load(old_data[sym])
+            if sym in state.order_depths:
+                o, c = strat.run(state)
+                orders[sym] = o
+                conversions += c
+            new_data[sym] = strat.save()
 
-            if symbol in state.order_depths:
-                strategy_orders, strategy_conversions = strategy.run(state)
-                orders[symbol] = strategy_orders
-                conversions += strategy_conversions
-
-            new_trader_data[symbol] = strategy.save()
-
-        trader_data = json.dumps(new_trader_data, separators=(",", ":"))
-
+        trader_data = json.dumps(new_data, separators=(",", ":"))
         logger.flush(state, orders, conversions, trader_data)
         return orders, conversions, trader_data
