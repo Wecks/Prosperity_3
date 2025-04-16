@@ -699,6 +699,142 @@ class KelpStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         return round(self.get_mid_price(state, self.symbol))
 
+class SquidinkJamsStrategy(Strategy):
+    # Define default parameters - will be overridden by specific implementations
+    DEFAULT_PARAMS = {
+        "take_width": 5,
+        "clear_width": 0.1,
+        "prevent_adverse": True,
+        "adverse_volume": 15,
+        "reversion_beta": -0.15,
+        "min_edge": 2.0
+    }
+
+    # Symbol-specific parameters
+    SYMBOL_PARAMS = {
+        "SQUID_INK": {
+            "take_width": 5,
+            "clear_width": 0.1,
+            "prevent_adverse": True,
+            "adverse_volume": 15,
+            "reversion_beta": -0.129,
+            "min_edge": 2.5
+        },
+        "JAMS": {
+            "take_width": 5,
+            "clear_width": 0.1,
+            "prevent_adverse": True,
+            "adverse_volume": 15,
+            "reversion_beta": -0.200,
+            "min_edge": 2.0
+        }
+    }
+
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+        self.last_price = None  # To track the last average price
+
+        # Set parameters based on the symbol
+        if symbol in self.SYMBOL_PARAMS:
+            self.params = self.SYMBOL_PARAMS[symbol]
+        else:
+            # For any other symbol, use default parameters
+            self.params = self.DEFAULT_PARAMS.copy()
+
+    def compute_fair_value(self, order_depth: OrderDepth) -> float:
+        if order_depth.sell_orders and order_depth.buy_orders:
+            best_ask = min(order_depth.sell_orders.keys())
+            best_bid = max(order_depth.buy_orders.keys())
+            adv_vol = self.params["adverse_volume"]
+            filtered_ask = [price for price, qty in order_depth.sell_orders.items() if abs(qty) >= adv_vol]
+            filtered_bid = [price for price, qty in order_depth.buy_orders.items() if abs(qty) >= adv_vol]
+            mm_ask = min(filtered_ask) if filtered_ask else None
+            mm_bid = max(filtered_bid) if filtered_bid else None
+            if mm_ask is None or mm_bid is None:
+                if self.last_price is None:
+                    mmmid_price = (best_ask + best_bid) / 2
+                else:
+                    mmmid_price = self.last_price
+            else:
+                mmmid_price = (mm_ask + mm_bid) / 2
+            if self.last_price is not None:
+                last_returns = (mmmid_price - self.last_price) / self.last_price
+                pred_returns = last_returns * self.params["reversion_beta"]
+                fair = mmmid_price + (mmmid_price * pred_returns)
+            else:
+                fair = mmmid_price
+            self.last_price = mmmid_price
+            return fair
+        return None
+
+    def act(self, state: TradingState) -> None:
+        if self.symbol not in state.order_depths:
+            return
+        order_depth = state.order_depths[self.symbol]
+        current_position = state.position.get(self.symbol, 0)
+        fair = self.compute_fair_value(order_depth)
+        if fair is None:
+            return
+        take_width = self.params["take_width"]
+        clear_width = self.params["clear_width"]
+        buy_order_volume = 0
+        sell_order_volume = 0
+
+        # Take orders (buy side)
+        if order_depth.sell_orders:
+            best_ask = min(order_depth.sell_orders.keys())
+            ask_qty = abs(order_depth.sell_orders[best_ask])
+            if best_ask <= fair - take_width:
+                quantity = min(ask_qty, self.limit - current_position)
+                if quantity > 0:
+                    self.buy(best_ask, quantity)
+                    buy_order_volume += quantity
+
+        # Take orders (sell side)
+        if order_depth.buy_orders:
+            best_bid = max(order_depth.buy_orders.keys())
+            bid_qty = order_depth.buy_orders[best_bid]
+            if best_bid >= fair + take_width:
+                quantity = min(bid_qty, self.limit + current_position)
+                if quantity > 0:
+                    self.sell(best_bid, quantity)
+                    sell_order_volume += quantity
+
+        position_after_take = current_position + buy_order_volume - sell_order_volume
+        fair_bid = round(fair - clear_width)
+        fair_ask = round(fair + clear_width)
+
+        # Position management
+        if position_after_take > 0:
+            clear_quantity = sum(qty for price, qty in order_depth.buy_orders.items() if price >= fair_ask)
+            clear_quantity = min(clear_quantity, position_after_take)
+            if clear_quantity > 0:
+                self.sell(fair_ask, clear_quantity)
+                sell_order_volume += clear_quantity
+
+        if position_after_take < 0:
+            clear_quantity = sum(abs(qty) for price, qty in order_depth.sell_orders.items() if price <= fair_bid)
+            clear_quantity = min(clear_quantity, abs(position_after_take))
+            if clear_quantity > 0:
+                self.buy(fair_bid, clear_quantity)
+                buy_order_volume += clear_quantity
+
+        # Market making orders based on min_edge
+        min_edge = self.params["min_edge"]
+        aaf = [price for price in order_depth.sell_orders.keys() if price >= round(fair + min_edge)]
+        bbf = [price for price in order_depth.buy_orders.keys() if price <= round(fair - min_edge)]
+        baaf = min(aaf) if aaf else round(fair + min_edge)
+        bbbf = max(bbf) if bbf else round(fair - min_edge)
+        mm_buy_price = bbbf + 1
+        mm_sell_price = baaf - 1
+        remaining_buy = self.limit - (current_position + buy_order_volume)
+        remaining_sell = self.limit + (current_position - sell_order_volume)
+
+        if remaining_buy > 0:
+            self.buy(mm_buy_price, remaining_buy)
+        if remaining_sell > 0:
+            self.sell(mm_sell_price, remaining_sell)
+
 class PicnicBasketStrategy(SignalStrategy):
      # Class-level default thresholds
      DEFAULT_THRESHOLDS = {
@@ -748,11 +884,11 @@ class PicnicBasketStrategy(SignalStrategy):
 class VolcanicRockVoucherStrategy(SignalStrategy):
     # Class-level default thresholds for each voucher
     DEFAULT_THRESHOLDS = {
-        "VOLCANIC_ROCK_VOUCHER_9500": 5,
-        "VOLCANIC_ROCK_VOUCHER_9750": 5,
-        "VOLCANIC_ROCK_VOUCHER_10000": 5,
-        "VOLCANIC_ROCK_VOUCHER_10250": 5,
-        "VOLCANIC_ROCK_VOUCHER_10500": 5,
+        "VOLCANIC_ROCK_VOUCHER_9500": 0.3,
+        "VOLCANIC_ROCK_VOUCHER_9750": 0.3,
+        "VOLCANIC_ROCK_VOUCHER_10000": 0.3,
+        "VOLCANIC_ROCK_VOUCHER_10250": 0.3,
+        "VOLCANIC_ROCK_VOUCHER_10500": 0.3,
     }
 
     # Override class-level thresholds with values from command line
@@ -840,8 +976,8 @@ class Trader:
             "RAINFOREST_RESIN": 50,
             "KELP": 50,
             "SQUID_INK": 50,
-            "CROISSANTS": 250,
             "JAMS": 350,
+            "CROISSANTS": 250,
             "DJEMBES": 60,
             "PICNIC_BASKET1": 60,
             "PICNIC_BASKET2": 100,
@@ -856,9 +992,9 @@ class Trader:
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
             "RAINFOREST_RESIN": RainforestStrategy,
             "KELP": KelpStrategy,
-            # "SQUID_INK": SquidinkStrategy,
+            "SQUID_INK": SquidinkJamsStrategy,
+            "JAMS": SquidinkJamsStrategy,
             # "CROISSANTS": PicnicBasketStrategy,
-            # "JAMS": PicnicBasketStrategy,
             # "DJEMBES": PicnicBasketStrategy,
             "PICNIC_BASKET1": PicnicBasketStrategy,
             "PICNIC_BASKET2": PicnicBasketStrategy,
