@@ -23,7 +23,6 @@ class Logger:
             "",
         ]))
 
-        # We truncate state.traderData, trader_data, and self.logs to the same max. length to fit the log limit
         max_item_length = (self.max_log_length - base_length) // 3
 
         print(self.to_json([
@@ -51,16 +50,13 @@ class Logger:
     def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
         compressed = []
         for listing in listings.values():
-        # On accède aux attributs de Listing comme des propriétés
             compressed.append([listing.symbol, listing.product, listing.denomination])
         return compressed
-
 
     def compress_order_depths(self, order_depths: dict[Symbol, OrderDepth]) -> dict[Symbol, list[Any]]:
         compressed = {}
         for symbol, order_depth in order_depths.items():
             compressed[symbol] = [order_depth.buy_orders, order_depth.sell_orders]
-
         return compressed
 
     def compress_trades(self, trades: dict[Symbol, list[Trade]]) -> list[list[Any]]:
@@ -75,32 +71,27 @@ class Logger:
                     trade.seller,
                     trade.timestamp,
                 ])
-
         return compressed
 
-        def compress_observations(self, observations: Observation) -> list[Any]:
-            conversion_observations = {}
-            for product, observation in observations.conversionObservations.items():
-                conversion_observations[product] = [
-                    observation.bidPrice,
-                    observation.askPrice,
-                    observation.transportFees,
-                    observation.exportTariff,
-                    observation.importTariff,
-                    observation.sunlightIndex,  # anciennement observation.sunlight
-                    None,  # évite l'erreur sur observation.plainValueObservations.get("Sugar Price", None)
+    def compress_observations(self, observations: Observation) -> list[Any]:
+        conversion_observations = {}
+        for product, observation in observations.conversionObservations.items():
+            conversion_observations[product] = [
+                observation.bidPrice,
+                observation.askPrice,
+                observation.transportFees,
+                observation.exportTariff,
+                observation.importTariff,
+                observation.sunlightIndex,
+                observation.plainValueObservations.get("Sugar Price", None),
             ]
-
         return [observations.plainValueObservations, conversion_observations]
-
-
 
     def compress_orders(self, orders: dict[Symbol, list[Order]]) -> list[list[Any]]:
         compressed = []
         for arr in orders.values():
             for order in arr:
                 compressed.append([order.symbol, order.price, order.quantity])
-
         return compressed
 
     def to_json(self, value: Any) -> str:
@@ -109,7 +100,6 @@ class Logger:
     def truncate(self, value: str, max_length: int) -> str:
         if len(value) <= max_length:
             return value
-
         return value[:max_length - 3] + "..."
 
 logger = Logger()
@@ -126,9 +116,7 @@ class Strategy:
     def run(self, state: TradingState) -> tuple[list[Order], int]:
         self.orders = []
         self.conversions = 0
-
         self.act(state)
-
         return self.orders, self.conversions
 
     def buy(self, price: int, quantity: int) -> None:
@@ -149,7 +137,6 @@ class Strategy:
 class MarketMakingStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
-
         self.window = deque()
         self.window_size = 10
 
@@ -194,7 +181,7 @@ class MarketMakingStrategy(Strategy):
             self.buy(true_value - 2, quantity)
             to_buy -= quantity
 
-        if to_buy > 0:
+        if to_buy > 0 and buy_orders:
             popular_buy_price = max(buy_orders, key=lambda tup: tup[1])[0]
             price = min(max_buy_price, popular_buy_price + 1)
             self.buy(price, to_buy)
@@ -215,7 +202,7 @@ class MarketMakingStrategy(Strategy):
             self.sell(true_value + 2, quantity)
             to_sell -= quantity
 
-        if to_sell > 0:
+        if to_sell > 0 and sell_orders:
             popular_sell_price = min(sell_orders, key=lambda tup: tup[1])[0]
             price = max(min_sell_price, popular_sell_price - 1)
             self.sell(price, to_sell)
@@ -233,14 +220,10 @@ class AmethystsStrategy(MarketMakingStrategy):
 class StarfruitStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         order_depth = state.order_depths[self.symbol]
-
-        order_depth = state.order_depths[self.symbol]
         buy_orders = sorted(order_depth.buy_orders.items(), reverse=True)
         sell_orders = sorted(order_depth.sell_orders.items())
-
         popular_buy_price = max(buy_orders, key=lambda tup: tup[1])[0]
         popular_sell_price = min(sell_orders, key=lambda tup: tup[1])[0]
-
         return round((popular_buy_price + popular_sell_price) / 2)
 
 class MAGNIFICENT_MACARONSStrategy(Strategy):
