@@ -223,7 +223,7 @@ class MAGNIFICENT_MACARONSStrategy(Strategy):
         if not obs:
             return
         buy_price = obs.askPrice + obs.transportFees + obs.importTariff
-        self.sell(max(int(obs.bidPrice - 0.5), int(buy_price + 1)), self.limit)
+        self.sell(max(int(obs.bidPrice - 0.5), int(buy_price + 1.5)), self.limit)
 
 class Trader:
     def __init__(self) -> None:
