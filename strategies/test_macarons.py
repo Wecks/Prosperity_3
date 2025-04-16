@@ -15,10 +15,10 @@ class Logger:
         self.logs += sep.join(map(str, objects)) + end
 
     def flush(self,
-              state: TradingState,
-              orders: dict[Symbol, list[Order]],
-              conversions: int,
-              trader_data: str) -> None:
+            state: TradingState,
+            orders: dict[Symbol, list[Order]],
+            conversions: int,
+            trader_data: str) -> None:
         base_length = len(self.to_json([
             self.compress_state(state, ""),
             self.compress_orders(orders),
@@ -28,14 +28,20 @@ class Logger:
         ]))
         max_item_length = (self.max_log_length - base_length) // 3
 
-        print(self.to_json([
+        message = self.to_json([
             self.compress_state(state, self.truncate(state.traderData, max_item_length)),
             self.compress_orders(orders),
             conversions,
             self.truncate(trader_data, max_item_length),
             self.truncate(self.logs, max_item_length),
-        ]))
+        ])
+
+        # CORRECTIONS ICI
+        logger.print(message)  # stocke dans self.logs
+        print(message)         # nécessaire pour le visualizer
+
         self.logs = ""
+
 
     def compress_state(self, state: TradingState, trader_data: str) -> list[Any]:
         return [
@@ -250,4 +256,6 @@ class Trader:
 
         trader_data = json.dumps(new_data, separators=(",", ":"))
         logger.flush(state, orders, conversions, trader_data)
+        print(logger.logs)  # <--- cette ligne est ajoutée
         return orders, conversions, trader_data
+
