@@ -286,19 +286,34 @@ class StarfruitStrategy(MarketMakingStrategy):
 class MAGNIFICENT_MACARONSStrategy(Strategy):
     def act(self, state: TradingState) -> None:
         pos = state.position.get(self.symbol, 0)
-        self.convert(-pos)
+        
+        # ⚠️ Limite de conversion supposée à 5 (tu peux adapter si tu en as la certitude)
+        max_convert = 5  
+        
+        if pos != 0:
+            convert_qty = min(abs(pos), max_convert)
+            self.convert(-convert_qty if pos > 0 else convert_qty)
+
         obs = state.observations.conversionObservations.get(self.symbol)
         if not obs:
             return
-        buy_price = obs.askPrice + obs.transportFees + obs.importTariff
-        self.sell(max(int(obs.bidPrice - 0.5), int(buy_price + 1)), self.limit)
+
+        # 💡 Prix total d'achat d'une unité à convertir
+        cost_price = obs.askPrice + obs.transportFees + obs.importTariff
+        # 💡 Prix minimum auquel on peut vendre avec un petit spread
+        sell_price = max(int(obs.bidPrice - 0.5), int(cost_price + 1))
+
+        max_to_sell = self.limit + state.position.get(self.symbol, 0)
+        if max_to_sell > 0:
+            self.sell(sell_price, max_to_sell)
+
 
 class Trader:
     def __init__(self) -> None:
         limits = {
             "AMETHYSTS": 20,
             "STARFRUIT": 20,
-            "MAGNIFICENT_MACARONS": 100,
+            "MAGNIFICENT_MACARONS": 75,
         }
         strat_map = {
             "AMETHYSTS": AmethystsStrategy,
