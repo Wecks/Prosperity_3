@@ -78,20 +78,21 @@ class Logger:
 
         return compressed
 
-    def compress_observations(self, observations: Observation) -> list[Any]:
-        conversion_observations = {}
-        for product, observation in observations.conversionObservations.items():
-            conversion_observations[product] = [
-                observation.bidPrice,
-                observation.askPrice,
-                observation.transportFees,
-                observation.exportTariff,
-                observation.importTariff,
-                observation.sunlightIndex,  # anciennement observation.sunlight
-                observation.plainValueObservations.get("Sugar Price", None),  # anciennement observation.humidity
-        ]
+        def compress_observations(self, observations: Observation) -> list[Any]:
+            conversion_observations = {}
+            for product, observation in observations.conversionObservations.items():
+                conversion_observations[product] = [
+                    observation.bidPrice,
+                    observation.askPrice,
+                    observation.transportFees,
+                    observation.exportTariff,
+                    observation.importTariff,
+                    observation.sunlightIndex,  # anciennement observation.sunlight
+                    None,  # évite l'erreur sur observation.plainValueObservations.get("Sugar Price", None)
+            ]
 
         return [observations.plainValueObservations, conversion_observations]
+
 
 
     def compress_orders(self, orders: dict[Symbol, list[Order]]) -> list[list[Any]]:
