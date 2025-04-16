@@ -86,8 +86,8 @@ run_backtest() {
 
 # Test a range of DJEMBES thresholds
 # Starting with values around the defaults (325, 370)
-for dj_long in $(seq 120 10 160); do
-    for dj_short in $(seq 190 10 230); do
+for dj_long in $(seq -90 20 10); do
+    for dj_short in $(seq 210 20 310); do
         run_backtest $dj_long $dj_short
     done
 done

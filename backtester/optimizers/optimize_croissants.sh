@@ -86,8 +86,8 @@ run_backtest() {
 
 # Test a range of CROISSANTS thresholds
 # Starting with values around the defaults (230, 355)
-for cr_long in $(seq 0 10 10); do
-    for cr_short in $(seq 130 10 130); do
+for cr_long in $(seq -100 20 20); do
+    for cr_short in $(seq 110 20 150); do
         run_backtest $cr_long $cr_short
     done
 done

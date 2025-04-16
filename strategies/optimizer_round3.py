@@ -838,11 +838,11 @@ class SquidinkJamsStrategy(Strategy):
 class PicnicBasketStrategy(SignalStrategy):
      # Class-level default thresholds
      DEFAULT_THRESHOLDS = {
-         "CROISSANTS": {"long": 30, "short": 150},
+         "CROISSANTS": {"long": -100, "short": 150},
          "JAMS": {"long": 0, "short": 150},
-         "DJEMBES": {"long": 130, "short": 220},
-         "PICNIC_BASKET1": {"long": 60, "short": 130},
-         "PICNIC_BASKET2": {"long": 40, "short": 110}
+         "DJEMBES": {"long": -30, "short": 250},
+         "PICNIC_BASKET1": {"long": -60, "short": 110},
+         "PICNIC_BASKET2": {"long": -60, "short": 120}
      }
 
      # Override class-level thresholds with values from command line
@@ -886,9 +886,9 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
     DEFAULT_THRESHOLDS = {
         "VOLCANIC_ROCK_VOUCHER_9500": 0.3,
         "VOLCANIC_ROCK_VOUCHER_9750": 0.3,
-        "VOLCANIC_ROCK_VOUCHER_10000": 0.3,
-        "VOLCANIC_ROCK_VOUCHER_10250": 0.3,
-        "VOLCANIC_ROCK_VOUCHER_10500": 0.3,
+        "VOLCANIC_ROCK_VOUCHER_10000":0.3,
+        "VOLCANIC_ROCK_VOUCHER_10250":0.3,
+        "VOLCANIC_ROCK_VOUCHER_10500":0.3,
     }
 
     # Override class-level thresholds with values from command line
@@ -994,8 +994,8 @@ class Trader:
             "KELP": KelpStrategy,
             "SQUID_INK": SquidinkJamsStrategy,
             "JAMS": SquidinkJamsStrategy,
-            # "CROISSANTS": PicnicBasketStrategy,
-            # "DJEMBES": PicnicBasketStrategy,
+            "CROISSANTS": PicnicBasketStrategy,
+            "DJEMBES": PicnicBasketStrategy,
             "PICNIC_BASKET1": PicnicBasketStrategy,
             "PICNIC_BASKET2": PicnicBasketStrategy,
             # "VOLCANIC_ROCK": VolcanicRockStrategy,

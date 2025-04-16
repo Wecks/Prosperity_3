@@ -86,8 +86,8 @@ run_backtest() {
 
 # Test a range of PICNIC_BASKET2 thresholds
 # More granular search around promising values
-for pb2_long in $(seq 30 5 80); do
-    for pb2_short in $(seq 80 5 130); do
+for pb2_long in $(seq -100 20 0); do
+    for pb2_short in $(seq 100 20 160); do
         run_backtest $pb2_long $pb2_short
     done
 done
