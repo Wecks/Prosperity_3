@@ -40,22 +40,13 @@ class Logger:
         return [
             state.timestamp,
             trader_data,
-            self.compress_listings(state.listings),
-            self.compress_order_depths(state.order_depths),
-            self.compress_trades(state.own_trades),
-            self.compress_trades(state.market_trades),
+            [[l.symbol, l.product, l.denomination] for l in state.listings.values()],
+            {s: [od.buy_orders, od.sell_orders] for s, od in state.order_depths.items()},
+            [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp] for arr in state.own_trades.values() for t in arr],
+            [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp] for arr in state.market_trades.values() for t in arr],
             state.position,
             self.compress_observations(state.observations),
         ]
-
-    def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
-        return [[l.symbol, l.product, l.denomination] for l in listings.values()]
-
-    def compress_order_depths(self, order_depths: dict[Symbol, OrderDepth]) -> dict[Symbol, list[Any]]:
-        return {s: [od.buy_orders, od.sell_orders] for s, od in order_depths.items()}
-
-    def compress_trades(self, trades: dict[Symbol, list[Trade]]) -> list[list[Any]]:
-        return [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp] for arr in trades.values() for t in arr]
 
     def compress_observations(self, observations: Observation) -> list[Any]:
         conv_obs = {}
