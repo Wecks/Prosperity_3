@@ -14,7 +14,12 @@ class Logger:
     def print(self, *objects: Any, sep: str = " ", end: str = "\n") -> None:
         self.logs += sep.join(map(str, objects)) + end
 
-    def flush(self, state: TradingState, orders: dict[Symbol, list[Order]], conversions: int, trader_data: str) -> None:
+    def flush(self,
+              state: TradingState,
+              orders: dict[Symbol, list[Order]],
+              conversions: int,
+              trader_data: str) -> None:
+        # compute how much room we have for each of traderData, logs, etc.
         base_length = len(self.to_json([
             self.compress_state(state, ""),
             self.compress_orders(orders),
@@ -22,56 +27,93 @@ class Logger:
             "",
             "",
         ]))
-
         max_item_length = (self.max_log_length - base_length) // 3
 
-        message = self.to_json([
+        # emit exactly one JSON line
+        print(self.to_json([
             self.compress_state(state, self.truncate(state.traderData, max_item_length)),
             self.compress_orders(orders),
             conversions,
             self.truncate(trader_data, max_item_length),
             self.truncate(self.logs, max_item_length),
-        ])
-
-        print(message)
+        ]))
         self.logs = ""
 
     def compress_state(self, state: TradingState, trader_data: str) -> list[Any]:
         return [
             state.timestamp,
             trader_data,
-            [[l.symbol, l.product, l.denomination] for l in state.listings.values()],
-            {s: [od.buy_orders, od.sell_orders] for s, od in state.order_depths.items()},
-            [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp] for arr in state.own_trades.values() for t in arr],
-            [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp] for arr in state.market_trades.values() for t in arr],
+            self.compress_listings(state.listings),
+            self.compress_order_depths(state.order_depths),
+            self.compress_trades(state.own_trades),
+            self.compress_trades(state.market_trades),
             state.position,
             self.compress_observations(state.observations),
         ]
 
+    def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
+        compressed: list[list[Any]] = []
+        for listing in listings.values():
+            # bracket-access matches the example that the Visualizer expects :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
+            compressed.append([
+                listing["symbol"],
+                listing["product"],
+                listing["denomination"],
+            ])
+        return compressed
+
+    def compress_order_depths(self, order_depths: dict[Symbol, OrderDepth]) -> dict[Symbol, list[Any]]:
+        compressed: dict[Symbol, list[Any]] = {}
+        for sym, od in order_depths.items():
+            compressed[sym] = [od.buy_orders, od.sell_orders]
+        return compressed
+
+    def compress_trades(self, trades: dict[Symbol, list[Trade]]) -> list[list[Any]]:
+        compressed: list[list[Any]] = []
+        for arr in trades.values():
+            for t in arr:
+                compressed.append([
+                    t.symbol,
+                    t.price,
+                    t.quantity,
+                    t.buyer,
+                    t.seller,
+                    t.timestamp,
+                ])
+        return compressed
+
     def compress_observations(self, observations: Observation) -> list[Any]:
-        conv_obs = {}
-        for p, o in observations.conversionObservations.items():
-            conv_obs[p] = [
-                o.bidPrice,
-                o.askPrice,
-                o.transportFees,
-                o.exportTariff,
-                o.importTariff,
-                o.sugarPrice,
-                o.sunlightIndex,
+        conv: dict[str, list[Any]] = {}
+        for prod, obs in observations.conversionObservations.items():
+            # now uses sunlight & humidity per the example :contentReference[oaicite:2]{index=2}&#8203;:contentReference[oaicite:3]{index=3}
+            conv[prod] = [
+                obs.bidPrice,
+                obs.askPrice,
+                obs.transportFees,
+                obs.exportTariff,
+                obs.importTariff,
+                obs.sunlight,
+                obs.humidity,
             ]
-        return [observations.plainValueObservations, conv_obs]
+        return [observations.plainValueObservations, conv]
 
     def compress_orders(self, orders: dict[Symbol, list[Order]]) -> list[list[Any]]:
-        return [[o.symbol, o.price, o.quantity] for arr in orders.values() for o in arr]
+        compressed: list[list[Any]] = []
+        for arr in orders.values():
+            for o in arr:
+                compressed.append([o.symbol, o.price, o.quantity])
+        return compressed
 
     def to_json(self, value: Any) -> str:
         return json.dumps(value, cls=ProsperityEncoder, separators=(",", ":"))
 
     def truncate(self, value: str, max_length: int) -> str:
-        return value if len(value) <= max_length else value[: max_length - 3] + "..."
+        if len(value) <= max_length:
+            return value
+        return value[: max_length - 3] + "."
 
 logger = Logger()
+
 
 class Strategy:
     def __init__(self, symbol: Symbol, limit: int) -> None:
@@ -83,7 +125,7 @@ class Strategy:
         raise NotImplementedError()
 
     def run(self, state: TradingState) -> tuple[list[Order], int]:
-        self.orders: list[Order] = []
+        self.orders = []
         self.conversions = 0
         self.act(state)
         return self.orders, self.conversions
@@ -103,6 +145,7 @@ class Strategy:
     def load(self, data: JSON) -> None:
         pass
 
+
 class MarketMakingStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
@@ -111,7 +154,7 @@ class MarketMakingStrategy(Strategy):
 
     @abstractmethod
     def get_true_value(self, state: TradingState) -> int:
-        raise NotImplementedError()
+        ...
 
     def act(self, state: TradingState) -> None:
         true_value = self.get_true_value(state)
@@ -134,55 +177,43 @@ class MarketMakingStrategy(Strategy):
         hard_liquidate = len(self.window) == self.window_size and all(self.window)
 
         max_buy_price = true_value - 1 if position > self.limit * 0.5 else true_value
-        min_sell_price = true_value + 1 if position < self.limit * -0.5 else true_value
+        min_sell_price = true_value + 1 if position < -self.limit * 0.5 else true_value
 
+        # Buy logic
         for price, volume in sell_orders:
             if to_buy > 0 and price <= max_buy_price:
                 qty = min(to_buy, -volume)
                 self.buy(price, qty)
                 to_buy -= qty
-
         if to_buy > 0 and hard_liquidate:
-            qty = to_buy // 2
-            self.buy(true_value, qty)
-
+            self.buy(true_value, to_buy // 2)
         if to_buy > 0 and soft_liquidate:
-            qty = to_buy // 2
-            self.buy(true_value - 2, qty)
-
+            self.buy(true_value - 2, to_buy // 2)
         if to_buy > 0 and buy_orders:
             popular_buy_price = max(buy_orders, key=lambda t: t[1])[0]
             price = min(max_buy_price, popular_buy_price + 1)
             self.buy(price, to_buy)
 
+        # Sell logic
         for price, volume in buy_orders:
             if to_sell > 0 and price >= min_sell_price:
                 qty = min(to_sell, volume)
                 self.sell(price, qty)
                 to_sell -= qty
-
         if to_sell > 0 and hard_liquidate:
-            qty = to_sell // 2
-            self.sell(true_value, qty)
-
+            self.sell(true_value, to_sell // 2)
         if to_sell > 0 and soft_liquidate:
-            qty = to_sell // 2
-            self.sell(true_value + 2, qty)
-
+            self.sell(true_value + 2, to_sell // 2)
         if to_sell > 0 and sell_orders:
             popular_sell_price = min(sell_orders, key=lambda t: t[1])[0]
             price = max(min_sell_price, popular_sell_price - 1)
             self.sell(price, to_sell)
 
-    def save(self) -> JSON:
-        return list(self.window)
-
-    def load(self, data: JSON) -> None:
-        self.window = deque(data)
 
 class AmethystsStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         return 10_000
+
 
 class StarfruitStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
@@ -195,8 +226,10 @@ class StarfruitStrategy(MarketMakingStrategy):
             return round((pb + ps) / 2)
         return 0
 
+
 class MAGNIFICENT_MACARONSStrategy(Strategy):
     def act(self, state: TradingState) -> None:
+        # flatten any existing position
         pos = state.position.get(self.symbol, 0)
         self.convert(-pos)
 
@@ -205,7 +238,11 @@ class MAGNIFICENT_MACARONSStrategy(Strategy):
             return
 
         buy_price = obs.askPrice + obs.transportFees + obs.importTariff
-        self.sell(max(int(obs.bidPrice - 0.5), int(buy_price + 1)), self.limit)
+        self.sell(
+            max(int(obs.bidPrice - 0.5), int(buy_price + 1)),
+            self.limit
+        )
+
 
 class Trader:
     def __init__(self) -> None:
