@@ -87,11 +87,12 @@ class Logger:
                 observation.transportFees,
                 observation.exportTariff,
                 observation.importTariff,
-                observation.sunlight,
-                observation.humidity,
-            ]
+                observation.sunlightIndex,  # anciennement observation.sunlight
+                observation.plainValueObservations.get("Sugar Price", None),  # anciennement observation.humidity
+        ]
 
         return [observations.plainValueObservations, conversion_observations]
+
 
     def compress_orders(self, orders: dict[Symbol, list[Order]]) -> list[list[Any]]:
         compressed = []
