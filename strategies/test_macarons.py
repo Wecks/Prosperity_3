@@ -242,7 +242,7 @@ class StarfruitStrategy(MarketMakingStrategy):
 
         return round((popular_buy_price + popular_sell_price) / 2)
 
-class Magnificient_MacaronsStrategy(Strategy):
+class MAGNIFICENT_MACARONSStrategy(Strategy):
     def act(self, state: TradingState) -> None:
         position = state.position.get(self.symbol, 0)
         self.convert(-1 * position)
@@ -259,13 +259,13 @@ class Trader:
         limits = {
             "AMETHYSTS": 20,
             "STARFRUIT": 20,
-            "Magnificient_Macarons": 100,
+            "MAGNIFICENT_MACARONS": 100,
         }
 
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
             "AMETHYSTS": AmethystsStrategy,
             "STARFRUIT": StarfruitStrategy,
-            "Magnificient_Macarons": Magnificient_MacaronsStrategy,
+            "MAGNIFICENT_MACARONS": MAGNIFICENT_MACARONSStrategy,
         }.items()}
 
     def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:
