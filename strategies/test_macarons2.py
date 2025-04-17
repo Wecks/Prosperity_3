@@ -29,7 +29,7 @@ PARAMS = {
     },
     Product.MAGNIFICENT_MACARONS:{
         "make_edge": 0.2, # base value 2
-        "make_min_edge": 1, # base value 1
+        "make_min_edge": 0.3, # base value 1
         "make_probability": 0.1, # base value 0.566
         "init_make_edge": 0.2, # base value 2
         "min_edge": 0.2, # base value 0.5
