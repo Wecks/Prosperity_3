@@ -32,7 +32,7 @@ PARAMS = {
         "make_min_edge": 0.3,  # base value 1
         "make_probability": 0.1,  # base value 0.566
         "init_make_edge": 0.2,    # base value 2
-        "min_edge": 0.2,          # base value 0.5
+        "min_edge": 0.1,          # base value 0.5
         "volume_avg_timestamp": 5,# base value 5
         "volume_bar": 35,         # base value 75
         "dec_edge_discount": 0.8, # base value 0.8
