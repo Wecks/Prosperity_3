@@ -420,6 +420,7 @@ class Trader:
                 break
             qty = min(-order_depth.sell_orders[price], buy_cap)
             if qty > 0:
+                del order_depth.sell_orders[price]
                 orders.append(Order(Product.MAGNIFICENT_MACARONS, round(price), qty))
                 buy_vol += qty
 
@@ -428,6 +429,7 @@ class Trader:
                 break
             qty = min(order_depth.buy_orders[price], sell_cap)
             if qty > 0:
+                del order_depth.buy_orders[price]
                 orders.append(Order(Product.MAGNIFICENT_MACARONS, round(price), -qty))
                 sell_vol += qty
 
