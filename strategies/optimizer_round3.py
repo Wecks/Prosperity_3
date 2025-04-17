@@ -842,7 +842,7 @@ class PicnicBasketStrategy(SignalStrategy):
          "JAMS": {"long": 0, "short": 150},
          "DJEMBES": {"long": -30, "short": 250},
          "PICNIC_BASKET1": {"long": -60, "short": 110},
-         "PICNIC_BASKET2": {"long": -60, "short": 135}
+         "PICNIC_BASKET2": {"long": -60, "short": 150}
      }
 
      # Override class-level thresholds with values from command line
