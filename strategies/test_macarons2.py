@@ -545,7 +545,7 @@ class Trader:
             print(f"MAGNIFICENT_MACARONS_POSITION: {pos}")
 
             # 1) Conversion
-            conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
+            # conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
 
             # 2) Calcul de l'edge adaptatif
             obs = state.observations.conversionObservations[Product.MAGNIFICENT_MACARONS]
