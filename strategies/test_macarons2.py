@@ -30,7 +30,7 @@ PARAMS = {
     Product.MAGNIFICENT_MACARONS:{
         "make_edge": 0.2, # base value 2
         "make_min_edge": 1, # base value 1
-        "make_probability": 0.566, # base value 0.566
+        "make_probability": 1.3, # base value 0.566
         "init_make_edge": 0.2, # base value 2
         "min_edge": 0.2, # base value 0.5
         "volume_avg_timestamp": 5, # base value 5
@@ -546,6 +546,7 @@ class Trader:
 
             # 1) Conversion
             # conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
+            conversions = 0
 
             # 2) Calcul de l'edge adaptatif
             obs = state.observations.conversionObservations[Product.MAGNIFICENT_MACARONS]
