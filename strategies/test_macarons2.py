@@ -34,7 +34,7 @@ PARAMS = {
         "init_make_edge": 0.2, # base value 2
         "min_edge": 0.2, # base value 0.5
         "volume_avg_timestamp": 5, # base value 5
-        "volume_bar": 0.5, # base value 75
+        "volume_bar": 35, # base value 75
         "dec_edge_discount": 0.8, # base value 0.8
         "step_size":0.5 # base value 0.5
     }
