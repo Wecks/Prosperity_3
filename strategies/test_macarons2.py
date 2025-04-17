@@ -28,7 +28,7 @@ PARAMS = {
         "starfruit_min_edge": 2,
     },
     Product.MAGNIFICENT_MACARONS:{
-        "make_edge": 2,
+        "make_edge": 0.2,
         "make_min_edge": 1,
         "make_probability": 0.566,
         "init_make_edge": 2,
