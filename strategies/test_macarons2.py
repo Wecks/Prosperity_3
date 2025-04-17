@@ -521,6 +521,8 @@ class Trader:
         # Only liquidate negative position (BUY)
         if position < 0:
             buy_qty = min(-position, position_limit - (position + buy_order_volume))
+            print(f"POS: {position}")
+            print(f"implied_bid: {implied_bid}, bid: {bid}, buy_qty: {buy_qty}")
             if buy_qty > 0 and bid < implied_bid:
                 orders.append(Order(Product.MAGNIFICENT_MACARONS, round(bid), buy_qty))
 
