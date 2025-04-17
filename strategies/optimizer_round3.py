@@ -884,11 +884,11 @@ class PicnicBasketStrategy(SignalStrategy):
 class VolcanicRockVoucherStrategy(SignalStrategy):
     # Class-level default thresholds for each voucher
     DEFAULT_THRESHOLDS = {
-        "VOLCANIC_ROCK_VOUCHER_9500": 0.3,
-        "VOLCANIC_ROCK_VOUCHER_9750": 0.3,
-        "VOLCANIC_ROCK_VOUCHER_10000":0.3,
-        "VOLCANIC_ROCK_VOUCHER_10250":0.3,
-        "VOLCANIC_ROCK_VOUCHER_10500":0.3,
+        "VOLCANIC_ROCK_VOUCHER_9500": 0.2,
+        "VOLCANIC_ROCK_VOUCHER_9750": 0.2,
+        "VOLCANIC_ROCK_VOUCHER_10000":0.2,
+        "VOLCANIC_ROCK_VOUCHER_10250":0.2,
+        "VOLCANIC_ROCK_VOUCHER_10500":0.2,
     }
 
     # Override class-level thresholds with values from command line
