@@ -42,7 +42,7 @@ run_backtest() {
     echo "Running test with JAMS($jm_long,$jm_short)..."
     cd "$base_dir"
     local output_file="$strategies_dir/${tmp_name}.output"
-    prosperity3bt "strategies/${tmp_name}.py" 3 > "$output_file" 2>&1
+    prosperity3bt "strategies/${tmp_name}.py" 2 > "$output_file" 2>&1
     local exit_code=$?
     local output=$(cat "$output_file")
 

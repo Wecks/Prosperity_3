@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Optimization script specifically for PICNIC_BASKET2 thresholds
+# Optimization script specifically for JAMS thresholds
 # Get the directory of this script
 DIR=$(dirname "$0")
 
@@ -10,15 +10,15 @@ mkdir -p "$RESULTS_DIR"
 
 # Timestamp for this optimization run
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-RESULTS_FILE="$RESULTS_DIR/optimization_picnic_basket2_${TIMESTAMP}.csv"
+RESULTS_FILE="$RESULTS_DIR/optimization_jams_${TIMESTAMP}.csv"
 
 # Write header
-echo "pb2_long,pb2_short,pnl" > "$RESULTS_FILE"
+echo "jams_long,jams_short,pnl" > "$RESULTS_FILE"
 
 # Function to run backtest with given parameters
 run_backtest() {
-    local pb2_long=$1
-    local pb2_short=$2
+    local jm_long=$1
+    local jm_short=$2
 
     # Create a temporary modified strategy file in the strategies directory
     local tmp_name="optimizer_round3_optimized_${RANDOM}"
@@ -36,13 +36,13 @@ run_backtest() {
     cp "$strategies_dir/optimizer_round3.py" "$tmp_file"
 
     # Update the thresholds in the temporary file
-    sed -i "s/\"PICNIC_BASKET2\": {\"long\": [0-9]*, \"short\": [0-9]*}/\"PICNIC_BASKET2\": {\"long\": $pb2_long, \"short\": $pb2_short}/g" "$tmp_file"
+    sed -i "s/\"JAMS\": {\"long\": [0-9]*, \"short\": [0-9]*}/\"JAMS\": {\"long\": $jm_long, \"short\": $jm_short}/g" "$tmp_file"
 
     # Run the backtest with the modified file and wait for it to complete
-    echo "Running test with PB2($pb2_long,$pb2_short)..."
+    echo "Running test with JAMS($jm_long,$jm_short)..."
     cd "$base_dir"
     local output_file="$strategies_dir/${tmp_name}.output"
-    prosperity3bt "strategies/${tmp_name}.py" 2 > "$output_file" 2>&1
+    prosperity3bt "strategies/${tmp_name}.py" 4 > "$output_file" 2>&1
     local exit_code=$?
     local output=$(cat "$output_file")
 
@@ -79,16 +79,16 @@ run_backtest() {
     fi
 
     # Append result to CSV
-    echo "$pb2_long,$pb2_short,$pnl" >> "$RESULTS_FILE"
+    echo "$jm_long,$jm_short,$pnl" >> "$RESULTS_FILE"
 
-    echo "Tested: PB2($pb2_long,$pb2_short) → PnL: $pnl"
+    echo "Tested: JAMS($jm_long,$jm_short) → PnL: $pnl"
 }
 
-# Test a range of PICNIC_BASKET2 thresholds
-# More granular search around promising values
-for pb2_long in $(seq -200 20 0); do
-    for pb2_short in $(seq 100 20 200); do
-        run_backtest $pb2_long $pb2_short
+# Test a range of JAMS thresholds
+# Starting with values around the defaults (195, 485)
+for jm_long in $(seq 0 20 80); do
+    for jm_short in $(seq 150 20 230); do
+        run_backtest $jm_long $jm_short
     done
 done
 
@@ -100,11 +100,11 @@ sort -t ',' -k3 -nr "$RESULTS_FILE" | head -2
 
 # Create a plot if gnuplot is available
 if command -v gnuplot &> /dev/null; then
-    PLOT_FILE="$RESULTS_DIR/picnic_basket2_plot_${TIMESTAMP}.png"
+    PLOT_FILE="$RESULTS_DIR/jams_plot_${TIMESTAMP}.png"
     gnuplot <<- EOF
     set terminal png size 1200,800
     set output "$PLOT_FILE"
-    set title "PICNIC_BASKET2 Optimization Results"
+    set title "JAMS Optimization Results"
     set datafile separator ","
     set xlabel "Long Threshold"
     set ylabel "Short Threshold"
