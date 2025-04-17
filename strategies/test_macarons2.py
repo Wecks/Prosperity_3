@@ -28,15 +28,15 @@ PARAMS = {
         "starfruit_min_edge": 2,
     },
     Product.MAGNIFICENT_MACARONS:{
-        "make_edge": 0.2,      # base value 2
-        "make_min_edge": 0.3,  # base value 1
-        "make_probability": 0.1,  # base value 0.566
-        "init_make_edge": 0.2,    # base value 2
-        "min_edge": 0.1,          # base value 0.5
-        "volume_avg_timestamp": 5,# base value 5
-        "volume_bar": 35,         # base value 75
-        "dec_edge_discount": 0.8, # base value 0.8
-        "step_size": 0.5          # base value 0.5
+        "make_edge": 0.2,      # base value 2 Valeur d'edge pour market making (non utilisée ici directement)
+        "make_min_edge": 0.3,  # base value 1 Minimum autorisé pour market making (non utilisé dans ta version actuelle)
+        "make_probability": 0.1,  # base value 0.566 Réduction du edge pour prise d'ordre : plus c'est petit, plus tu es exigeant
+        "init_make_edge": 0.2,    # base value 2 Edge initial quand tu démarres le bot
+        "min_edge": 0.2,          # base value 0.5 Minimum absolu que l'edge peut atteindre (bloqué ici !)
+        "volume_avg_timestamp": 5,# base value 5 Fenêtre de temps pour moyenne des volumes (plus c'est grand, plus t'es lent à réagir)
+        "volume_bar": 55,         # base value 75 Seuil de volume moyen avant de dire "on est trop actif"
+        "dec_edge_discount": 0.8, # base value 0.8 Facteur de tolérance avant de baisser l’agressivité
+        "step_size": 0.5          # base value 0.5 Pas d’augmentation/diminution de edge
     }
 }
 
