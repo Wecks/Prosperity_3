@@ -463,7 +463,11 @@ class Trader:
         if aggressive_ask > implied_ask:
             ask = aggressive_ask
 
-        edge = (ask - implied_ask) * self.params[Product.MAGNIFICENT_MACARONS]["make_probability"]
+        edge = max(
+            (ask - implied_ask) * self.params[Product.MAGNIFICENT_MACARONS]["make_probability"],
+            self.params[Product.MAGNIFICENT_MACARONS]["make_edge"]
+)
+
 
         for price in sorted(list(order_depth.sell_orders.keys())):
             if price > implied_bid - edge:
