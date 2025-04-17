@@ -553,9 +553,11 @@ class Trader:
 
             # 3) Passage des ordres d'arbitrage
             od = state.order_depths[Product.MAGNIFICENT_MACARONS]
-            orders_list, _, _ = self.MAGNIFICENT_MACARONS_arb_take(od, obs, edge, pos)
+            orders_take, buy_v, sell_v = self.MAGNIFICENT_MACARONS_arb_take(od, obs, edge, pos)
+            orders_make, _, _ = self.MAGNIFICENT_MACARONS_arb_make(od, obs, pos, edge, buy_v, sell_v)
 
-            result[Product.MAGNIFICENT_MACARONS] = orders_list
+
+            result[Product.MAGNIFICENT_MACARONS] = orders_take + orders_make
 
         traderData = jsonpickle.encode(traderObject)
         return result, conversions, traderData
