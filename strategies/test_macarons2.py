@@ -56,7 +56,7 @@ class Trader:
         self.MAGNIFICENT_MACARONS_data = {
             "curr_edge": self.params[Product.MAGNIFICENT_MACARONS]["init_make_edge"],
             "volume_history": [],
-            "optimized": False
+            # commenté car sinon ça bloque le edge "optimized": False
         }
 
     # Returns buy_order_volume, sell_order_volume
@@ -418,7 +418,7 @@ class Trader:
 
         if len(self.MAGNIFICENT_MACARONS_data["volume_history"]) < self.params[Product.MAGNIFICENT_MACARONS]["volume_avg_timestamp"]:
             return curr_edge
-        elif not self.MAGNIFICENT_MACARONS_data["optimized"]:
+        # commenté car sinon ça bloque le edge. elif not self.MAGNIFICENT_MACARONS_data["optimized"]:
             volume_avg = np.mean(self.MAGNIFICENT_MACARONS_data["volume_history"])
 
             if volume_avg >= self.params[Product.MAGNIFICENT_MACARONS]["volume_bar"]:
@@ -431,7 +431,7 @@ class Trader:
                 if curr_edge - self.params[Product.MAGNIFICENT_MACARONS]["step_size"] > self.params[Product.MAGNIFICENT_MACARONS]["min_edge"]:
                     self.MAGNIFICENT_MACARONS_data["volume_history"] = []
                     self.MAGNIFICENT_MACARONS_data["curr_edge"] = curr_edge - self.params[Product.MAGNIFICENT_MACARONS]["step_size"]
-                    self.MAGNIFICENT_MACARONS_data["optimized"] = True
+                    # commenté car sinon ça bloque le edge self.MAGNIFICENT_MACARONS_data["optimized"] = True
                     return curr_edge - self.params[Product.MAGNIFICENT_MACARONS]["step_size"]
                 else:
                     self.MAGNIFICENT_MACARONS_data["curr_edge"] = self.params[Product.MAGNIFICENT_MACARONS]["min_edge"]
