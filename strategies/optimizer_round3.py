@@ -887,7 +887,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         "VOLCANIC_ROCK_VOUCHER_9500": 0.2,
         "VOLCANIC_ROCK_VOUCHER_9750": 0.2,
         "VOLCANIC_ROCK_VOUCHER_10000":0.2,
-        "VOLCANIC_ROCK_VOUCHER_10250":0.2,
+        "VOLCANIC_ROCK_VOUCHER_10250":0.1,
         "VOLCANIC_ROCK_VOUCHER_10500":0.2,
     }
 
