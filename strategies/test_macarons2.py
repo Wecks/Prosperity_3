@@ -463,11 +463,7 @@ class Trader:
         if aggressive_ask > implied_ask:
             ask = aggressive_ask
 
-        edge = max(
-            (ask - implied_ask) * self.params[Product.MAGNIFICENT_MACARONS]["make_probability"],
-            self.params[Product.MAGNIFICENT_MACARONS]["make_edge"]
-)
-
+        edge = (ask - implied_ask) * self.params[Product.MAGNIFICENT_MACARONS]["make_probability"]
 
         for price in sorted(list(order_depth.sell_orders.keys())):
             if price > implied_bid - edge:
@@ -519,16 +515,17 @@ class Trader:
         # Only liquidate positive position (SELL)
         if position > 0:
             sell_qty = min(position, position_limit + (position - sell_order_volume))
-            if sell_qty > 0 and ask > implied_ask:
+            entry_price = implied_ask + 0.1
+            if sell_qty > 0 and ask > entry_price:
                 orders.append(Order(Product.MAGNIFICENT_MACARONS, round(ask), -sell_qty))
 
         # Only liquidate negative position (BUY)
         if position < 0:
             buy_qty = min(-position, position_limit - (position + buy_order_volume))
-            print(f"POS: {position}")
-            print(f"implied_bid: {implied_bid}, bid: {bid}, buy_qty: {buy_qty}")
-            if buy_qty > 0 and bid < implied_bid:
+            entry_price = implied_bid - 0.1
+            if buy_qty > 0 and bid < entry_price:
                 orders.append(Order(Product.MAGNIFICENT_MACARONS, round(bid), buy_qty))
+
 
         return orders, buy_order_volume, sell_order_volume
 
