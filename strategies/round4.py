@@ -1,7 +1,5 @@
 import json
 import math
-import sys
-import argparse
 from abc import abstractmethod
 from collections import deque
 from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder, Symbol, Trade, TradingState
@@ -114,6 +112,7 @@ class Logger:
             return value
 
         return value[:max_length - 3] + "..."
+
 
 logger = Logger()
 
@@ -281,13 +280,13 @@ class TechnicalIndicators:
 
         Args:
             highs: List of high prices
-            lows: List of low prices
+            lows: List of low prix
             closes: List of closing prices
             k_window: Window size for %K (default: 14)
             d_window: Window size for %D (default: 3)
 
         Returns:
-            tuple containing (%K, %D)
+            tuple contenant (%K, %D)
         """
         if len(closes) < k_window:
             return [None] * len(closes), [None] * len(closes)
@@ -838,6 +837,14 @@ class SquidinkJamsStrategy(Strategy):
 class PicnicBasketStrategy(SignalStrategy):
      # Class-level default thresholds
      DEFAULT_THRESHOLDS = {
+        # BEST PERFORM IN REAL (100K TIMESTAMPS)
+        #  "CROISSANTS": {"long": -100, "short": 150},
+        #  "JAMS": {"long": 0, "short": 150},
+        #  "DJEMBES": {"long": -30, "short": 250},
+        #  "PICNIC_BASKET1": {"long": -60, "short": 110},
+        #  "PICNIC_BASKET2": {"long": -60, "short": 120}
+
+        # BEST PERFORM IN BACKTEST (6M TIMESTAMPS)
          "CROISSANTS": {"long": -180, "short": 150},
          "JAMS": {"long": 0, "short": 150},
          "DJEMBES": {"long": -150, "short": 250},
@@ -882,18 +889,6 @@ class PicnicBasketStrategy(SignalStrategy):
          return None
 
 class VolcanicRockVoucherStrategy(SignalStrategy):
-    # Class-level default thresholds for each voucher
-    DEFAULT_THRESHOLDS = {
-        "VOLCANIC_ROCK_VOUCHER_9500": 0.2,
-        "VOLCANIC_ROCK_VOUCHER_9750": 0.2,
-        "VOLCANIC_ROCK_VOUCHER_10000":0.2,
-        "VOLCANIC_ROCK_VOUCHER_10250":0.2,
-        "VOLCANIC_ROCK_VOUCHER_10500":0.2,
-    }
-
-    # Override class-level thresholds with values from command line
-    THRESHOLDS = DEFAULT_THRESHOLDS.copy()
-
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
         self.cdf = NormalDist().cdf
@@ -908,11 +903,8 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 
         # Track days to expiration - starts at 7 days and decreases each round
         # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
-        self.days_to_expiration = 7-2  # Starting value - 2 because we are at round 3.
+        self.days_to_expiration = 7-3  # Starting value - 3 because we are at round 4.
         self.last_timestamp = None
-
-        # Use the class-level thresholds
-        self.threshold = VolcanicRockVoucherStrategy.THRESHOLDS.get(symbol, 5)
 
     def get_signal(self, state: TradingState) -> Signal | None:
         # Update days to expiration based on timestamp (one round = one day)
@@ -950,11 +942,13 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
             self.volatility       # Volatility parameter
         )
 
-        # Use the optimized threshold for this specific voucher
+        # Trading threshold - adjust these values based on market behavior
+        threshold = 0.02  # Threshold for trading signal
+
         # Generate signals based on pricing difference
-        if voucher_price > expected_price + self.threshold:
+        if voucher_price > expected_price + threshold:
             return Signal.SHORT  # Voucher is overpriced
-        elif voucher_price < expected_price - self.threshold:
+        elif voucher_price < expected_price - threshold:
             return Signal.LONG   # Voucher is underpriced
 
     def black_scholes(
@@ -969,6 +963,16 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility ** 2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
         d2 = d1 - volatility * math.sqrt(expiration_time)
         return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
+
+class MagnificentMacaronsStrategy(Strategy):
+    def act(self, state: TradingState) -> None:
+        pos = state.position.get(self.symbol, 0)
+        self.convert(-pos)
+        obs = state.observations.conversionObservations.get(self.symbol)
+        if not obs:
+            return
+        buy_price = obs.askPrice + obs.transportFees + obs.importTariff
+        self.sell(max(int(obs.bidPrice), int(buy_price - 5)), self.limit)
 
 class Trader:
     def __init__(self) -> None:
@@ -987,6 +991,7 @@ class Trader:
             "VOLCANIC_ROCK_VOUCHER_10000": 200,
             "VOLCANIC_ROCK_VOUCHER_10250": 200,
             "VOLCANIC_ROCK_VOUCHER_10500": 200,
+            "MAGNIFICENT_MACARONS": 75,
         }
 
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
@@ -998,12 +1003,12 @@ class Trader:
             "DJEMBES": PicnicBasketStrategy,
             "PICNIC_BASKET1": PicnicBasketStrategy,
             "PICNIC_BASKET2": PicnicBasketStrategy,
-            # "VOLCANIC_ROCK": VolcanicRockStrategy,
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy,
+            "MAGNIFICENT_MACARONS":MagnificentMacaronsStrategy
         }.items()}
 
     def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:

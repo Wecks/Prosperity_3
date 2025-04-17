@@ -42,7 +42,7 @@ run_backtest() {
     echo "Running test with DJEMBES($dj_long,$dj_short)..."
     cd "$base_dir"
     local output_file="$strategies_dir/${tmp_name}.output"
-    prosperity3bt "strategies/${tmp_name}.py" 3 > "$output_file" 2>&1
+    prosperity3bt "strategies/${tmp_name}.py" 2 > "$output_file" 2>&1
     local exit_code=$?
     local output=$(cat "$output_file")
 
@@ -86,7 +86,7 @@ run_backtest() {
 
 # Test a range of DJEMBES thresholds
 # Starting with values around the defaults (325, 370)
-for dj_long in $(seq -90 20 10); do
+for dj_long in $(seq -150 20 10); do
     for dj_short in $(seq 210 20 310); do
         run_backtest $dj_long $dj_short
     done

@@ -42,7 +42,7 @@ run_backtest() {
     echo "Running test with CROISSANTS($cr_long,$cr_short)..."
     cd "$base_dir"
     local output_file="$strategies_dir/${tmp_name}.output"rm
-    prosperity3bt "strategies/${tmp_name}.py" 3 > "$output_file" 2>&1
+    prosperity3bt "strategies/${tmp_name}.py" 2 > "$output_file" 2>&1
     local exit_code=$?
     local output=$(cat "$output_file")
 
@@ -86,8 +86,8 @@ run_backtest() {
 
 # Test a range of CROISSANTS thresholds
 # Starting with values around the defaults (230, 355)
-for cr_long in $(seq -100 20 20); do
-    for cr_short in $(seq 110 20 150); do
+for cr_long in $(seq -200 20 20); do
+    for cr_short in $(seq 110 20 190); do
         run_backtest $cr_long $cr_short
     done
 done
