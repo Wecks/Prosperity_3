@@ -28,15 +28,15 @@ PARAMS = {
         "starfruit_min_edge": 2,
     },
     Product.MAGNIFICENT_MACARONS:{
-        "make_edge": 0.2,
-        "make_min_edge": 1,
-        "make_probability": 0.566,
-        "init_make_edge": 2,
-        "min_edge": 0.5,
-        "volume_avg_timestamp": 5,
-        "volume_bar": 75,
-        "dec_edge_discount": 0.8,
-        "step_size":0.5
+        "make_edge": 0.2, # base value 2
+        "make_min_edge": 1, # base value 1
+        "make_probability": 0.566, # base value 0.566
+        "init_make_edge": 0.2, # base value 2
+        "min_edge": 0.5, # base value 0.5
+        "volume_avg_timestamp": 5, # base value 5
+        "volume_bar": 75, # base value 75
+        "dec_edge_discount": 0.8, # base value 0.8
+        "step_size":0.5 # base value 0.5
     }
 }
 
