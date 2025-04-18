@@ -1021,6 +1021,8 @@ class MagnificentMacaronsStrategy(Strategy):
 
         pos = state.position.get(self.symbol, 0)
 
+        """il semblerait qu'il faille après convertir envoyer des ordres sinon ça convertis mais
+        ne fais rien"""
         # 1) Persistent high sunlight: convert and sell on market
         if len(self.sun_history) >= self.persistent_length:
             last_slice = list(self.sun_history)[-self.persistent_length:]
@@ -1048,6 +1050,7 @@ class MagnificentMacaronsStrategy(Strategy):
                         market_price = int(obs.askPrice + obs.transportFees + obs.importTariff)
                         self.buy(market_price, sell_qty)  # rachète tout de suite
                 return
+
 
         # if sun < effective_csi and pos > 0:
         #     sell_qty = min(self.per_trade_size, pos)
