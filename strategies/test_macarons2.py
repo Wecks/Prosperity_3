@@ -28,7 +28,7 @@ PARAMS = {
         "starfruit_min_edge": 2,
     },
     Product.MAGNIFICENT_MACARONS:{
-        "make_edge": 1, # base value 2
+        "make_edge": 0.2, # base value 2
         "make_min_edge": 0.3, # base value 1
         "make_probability": 0.1, # base value 0.566
         "init_make_edge": 0.2, # base value 2
@@ -463,10 +463,12 @@ class Trader:
         if aggressive_ask > implied_ask:
             ask = aggressive_ask
 
+        calculated_edge = (ask - implied_ask) * self.params[Product.MAGNIFICENT_MACARONS]["make_probability"]
         edge = max(
-            self.params[Product.MAGNIFICENT_MACARONS]["make_edge"],  # un minimum
-            (ask - implied_ask) * self.params[Product.MAGNIFICENT_MACARONS]["make_probability"]
+            self.params[Product.MAGNIFICENT_MACARONS]["min_edge"],
+            calculated_edge
 )
+
 
 
         for price in sorted(list(order_depth.sell_orders.keys())):
