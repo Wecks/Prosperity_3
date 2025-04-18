@@ -989,7 +989,7 @@ class MagnificentMacaronsStrategy(Strategy):
 
         pos = state.position.get(self.symbol, 0)
         self.convert(-pos)
-        self.per_trade_size = int(1 + (abs(sun - 30)/5))
+        self.per_trade_size = int(1 + (abs(sun - 20)/5))
 
 
         # 1) Persistent high sunlight: convert and sell on market
