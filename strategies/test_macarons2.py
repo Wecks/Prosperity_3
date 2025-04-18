@@ -564,7 +564,7 @@ class Trader:
 
             # 1) Conversion
             # conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
-            conversions = 0
+            conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
 
             # 2) Calcul de l'edge adaptatif
             obs = state.observations.conversionObservations[Product.MAGNIFICENT_MACARONS]
