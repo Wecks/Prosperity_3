@@ -971,7 +971,7 @@ class MagnificentMacaronsStrategy(Strategy):
         self.sun_history: deque[float] = deque(maxlen=1000)
         # static base CSI chosen from backtest
         self.base_csi: float = 40.0
-        self.threshold: float = 3
+        self.threshold: float = 5
         self.persistent_length: int = 500     # consecutive ticks under effective CSI
         self.per_trade_size: int = 5        # max units per conversion
 
@@ -989,7 +989,7 @@ class MagnificentMacaronsStrategy(Strategy):
 
         pos = state.position.get(self.symbol, 0)
         self.convert(-pos)
-        self.per_trade_size = int(1 + (abs(sun + 10)/1))
+        self.per_trade_size = int(1 + (abs(sun - 10)/1))
 
 
         # 1) Persistent high sunlight: convert and sell on market
