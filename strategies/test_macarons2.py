@@ -551,11 +551,8 @@ class Trader:
             traderObject = jsonpickle.decode(state.traderData)
 
         result = {}
-        # 1) Conversion pour débloquer les trades (ramène la position à 0)
-        conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
 
 
-        # Correction : on clear la position puis on passe par arb_take
         if (Product.MAGNIFICENT_MACARONS in state.order_depths
             and Product.MAGNIFICENT_MACARONS in state.observations.conversionObservations):
 
@@ -563,7 +560,6 @@ class Trader:
             print(f"MAGNIFICENT_MACARONS_POSITION: {pos}")
 
             # 1) Conversion
-            # conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
             conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
 
             # 2) Calcul de l'edge adaptatif
@@ -576,8 +572,8 @@ class Trader:
             orders_take, buy_v, sell_v = self.MAGNIFICENT_MACARONS_arb_take(od, obs, edge, pos)
             orders_make, _, _ = self.MAGNIFICENT_MACARONS_arb_make(od, obs, pos, edge, buy_v, sell_v)
 
-
             result[Product.MAGNIFICENT_MACARONS] = orders_take + orders_make
+
 
         traderData = jsonpickle.encode(traderObject)
         return result, conversions, traderData
