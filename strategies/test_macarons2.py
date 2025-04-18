@@ -28,9 +28,9 @@ PARAMS = {
         "starfruit_min_edge": 2,
     },
     Product.MAGNIFICENT_MACARONS:{
-        "make_edge": 2, # base value 2
+        "make_edge": 0.2, # base value 2
         "make_min_edge": 0.3, # base value 1
-        "make_probability": 0.6, # base value 0.566
+        "make_probability": 0.1, # base value 0.566
         "init_make_edge": 0.2, # base value 2
         "min_edge": 0.2, # base value 0.5
         "volume_avg_timestamp": 5, # base value 5
@@ -40,6 +40,15 @@ PARAMS = {
     }
 }
 
+"""make_edge"            # Valeur initiale du edge utilisé pour arbitrage (tendance à acheter/vendre)
+"make_min_edge"        # Ancien seuil minimum autorisé pour market making (non utilisé dans ton code actuel)
+"make_probability"     # Réduction appliquée à l’edge calculé pour limiter les prises trop agressives
+"init_make_edge"         # Edge de départ au début du run (peut évoluer avec le temps)
+"min_edge"         # Edge minimum absolu utilisé pour éviter de prendre à perte
+"volume_avg_timestamp"    # Fenêtre pour calculer la moyenne des volumes récents (impacte l’adaptation du edge)
+"volume_bar"          # Seuil de volume moyen déclenchant l’augmentation du edge
+"dec_edge_discount"     # Tolérance avant de réduire le edge si on est trop passif
+"step_size"             # Incrément/décrément appliqué au edge lorsqu’on l’adapte"""
 
 class Trader:
     def __init__(self, params=None):
