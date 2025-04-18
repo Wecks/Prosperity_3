@@ -970,10 +970,10 @@ class MagnificentMacaronsStrategy(Strategy):
         # record recent sunlight readings
         self.sun_history: deque[float] = deque(maxlen=1000)
         # static base CSI chosen from backtest
-        self.base_csi: float = 50.0
+        self.base_csi: float = 40.0
         self.threshold: float = 5
         self.persistent_length: int = 500     # consecutive ticks under effective CSI
-        self.per_trade_size: int = 5        # max units per conversion
+        self.per_trade_size: int = 10        # max units per conversion
 
     def act(self, state: TradingState) -> None:
         obs = state.observations.conversionObservations.get(self.symbol)
