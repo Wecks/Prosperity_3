@@ -968,11 +968,11 @@ class MagnificentMacaronsStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
         # record recent sunlight readings
-        self.sun_history: deque[float] = deque(maxlen=500)
+        self.sun_history: deque[float] = deque(maxlen=1000)
         # static base CSI chosen from backtest
         self.base_csi: float = 40.0
         self.threshold: float = 3
-        self.persistent_length: int = 500     # consecutive ticks under effective CSI
+        self.persistent_length: int = 300     # consecutive ticks under effective CSI
         self.per_trade_size: int = 5        # max units per conversion
 
     def act(self, state: TradingState) -> None:
