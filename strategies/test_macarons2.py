@@ -551,7 +551,9 @@ class Trader:
             traderObject = jsonpickle.decode(state.traderData)
 
         result = {}
-        conversions = 0
+        # 1) Conversion pour débloquer les trades (ramène la position à 0)
+        conversions = self.MAGNIFICENT_MACARONS_arb_clear(pos)
+
 
         # Correction : on clear la position puis on passe par arb_take
         if (Product.MAGNIFICENT_MACARONS in state.order_depths
