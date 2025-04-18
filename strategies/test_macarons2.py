@@ -519,15 +519,15 @@ class Trader:
         # Only liquidate positive position (SELL)
         if position > 0:
             sell_qty = min(position, position_limit + (position - sell_order_volume))
-            entry_price = implied_ask + 0.1
-            if sell_qty > 0 and ask > entry_price:
+            entry_price_sell = implied_ask + observation.transportFees + 0.1  # ton vrai coût d'achat
+            if sell_qty > 0 and ask > entry_price_sell:
                 orders.append(Order(Product.MAGNIFICENT_MACARONS, round(ask), -sell_qty))
 
         # Only liquidate negative position (BUY)
         if position < 0:
             buy_qty = min(-position, position_limit - (position + buy_order_volume))
-            entry_price = implied_bid - 0.1
-            if buy_qty > 0 and bid < entry_price:
+            entry_price_buy = implied_bid - observation.transportFees - 0.1  # ton vrai prix de vente si t'es short
+            if buy_qty > 0 and bid < entry_price_buy:
                 orders.append(Order(Product.MAGNIFICENT_MACARONS, round(bid), buy_qty))
 
 
