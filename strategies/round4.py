@@ -5,7 +5,7 @@ from collections import deque
 from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder, Symbol, Trade, TradingState
 from enum import IntEnum
 from statistics import NormalDist
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, Deque
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 
@@ -965,14 +965,97 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
 
 class MagnificentMacaronsStrategy(Strategy):
+    '''
+    Compute the p-percentile of the last dynamic_window sunlight readings.
+
+    Blend it with the static CSI via dynamic_frac (e.g. 0.5 means 50% static, 50% percentile).
+
+    Now we can tune:
+
+    - dynamic_percentile (0.1 means 10th percentile, i.e. the low tail),
+
+    - dynamic_frac (how much weight to give that tail vs the backtested CSI).
+    '''
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+        # record recent sunlight readings
+        self.sun_history: deque[float] = deque(maxlen=100)
+        # static base CSI chosen from backtest
+        # self.base_csi: float = 30.0
+        # dynamic adjustment parameters
+        self.dynamic_window: int = 100        # lookback size for percentile
+        self.dynamic_percentile_buy: float = 0.6 # use 90th percentile of recent sunlight
+        self.dynamic_percentile_sell: float = 0.4 # use 10th percentile of recent sunlight
+        # self.dynamic_frac: float = 0.5       # weight of percentile vs static
+        # regime detection parameters
+        self.persistent_length: int = 5      # consecutive ticks under effective CSI
+        self.per_trade_size: int = 10        # max units per conversion
+
     def act(self, state: TradingState) -> None:
-        pos = state.position.get(self.symbol, 0)
-        self.convert(-pos)
         obs = state.observations.conversionObservations.get(self.symbol)
         if not obs:
             return
-        buy_price = obs.askPrice + obs.transportFees + obs.importTariff
-        self.sell(max(int(obs.bidPrice), int(buy_price - 5)), self.limit)
+
+        sun = obs.sunlightIndex
+        self.sun_history.append(sun)
+
+        # wait until enough history
+        if len(self.sun_history) < max(self.dynamic_window, self.persistent_length):
+            return
+
+        # recent window for percentile
+        recent = list(self.sun_history)[-self.dynamic_window:]
+        sorted_recent = sorted(recent)
+        # index for desired percentile (0-based)
+        idx_buy = int(self.dynamic_percentile_buy * (len(sorted_recent) - 1))
+        idx_sell = int(self.dynamic_percentile_sell * (len(sorted_recent) - 1))
+        pct_value_buy = sorted_recent[idx_buy]
+        pct_value_sell = sorted_recent[idx_sell]
+        # logger.print(f"Dynamic percentile value buy (90): {pct_value_buy} (window size: {self.dynamic_window}, index: {idx_buy})")
+        # logger.print(f"Dynamic percentile value sell (10): {pct_value_sell} (window size: {self.dynamic_window}, index: {idx_sell})")
+        # logger.print(f"Sunlight history: {list(self.sun_history)}")
+        # logger.print(f"Sorted recent sunlight: {sorted_recent}")
+
+        # blend static CSI and dynamic percentile value
+        # effective_csi = (1 - self.dynamic_frac) * self.base_csi + self.dynamic_frac * pct_value
+
+        pos = state.position.get(self.symbol, 0)
+
+        # 1) Persistent low regime: last readings below threshold
+        if len(self.sun_history) >= self.persistent_length:
+            last_slice = list(self.sun_history)[-self.persistent_length:]
+            if all(s > pct_value_buy for s in last_slice):
+                # TODO: CHECK HOW TO TRADE -> We enter in this condition
+                logger.print(f"Sunlight index is above {pct_value_buy} for {self.persistent_length} ticks, buying.")
+                buy_qty = min(self.per_trade_size, self.limit - pos)
+                if buy_qty > 0:
+                    self.convert(buy_qty)
+                return
+
+        # 2) Rebound regime: current sunlight back above threshold
+        if len(self.sun_history) >= self.persistent_length:
+            last_slice = list(self.sun_history)[-self.persistent_length:]
+            if all(s < pct_value_sell for s in last_slice):
+                # TODO: CHECK HOW TO TRADE -> We enter in this condition
+                logger.print(f"Sunlight index is below {pct_value_sell} for {self.persistent_length} ticks, selling.")
+                sell_qty = min(self.per_trade_size, self.limit + pos)
+                if sell_qty > 0:
+                    self.convert(-sell_qty)
+                return
+        # if sun < effective_csi and pos > 0:
+        #     sell_qty = min(self.per_trade_size, pos)
+        #     self.convert(-sell_qty)
+        #     return
+
+
+    # def act(self, state: TradingState) -> None:
+    #     pos = state.position.get(self.symbol, 0)
+    #     self.convert(-pos)
+    #     obs = state.observations.conversionObservations.get(self.symbol)
+    #     if not obs:
+    #         return
+    #     buy_price = obs.askPrice + obs.transportFees + obs.importTariff
+    #     self.sell(max(int(obs.bidPrice), int(buy_price - 5)), self.limit)
 
 class Trader:
     def __init__(self) -> None:
