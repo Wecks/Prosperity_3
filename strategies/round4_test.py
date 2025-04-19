@@ -968,12 +968,12 @@ class MagnificentMacaronsStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
         # record recent sunlight readings
-        self.sun_history: deque[float] = deque(maxlen=1000)
+        self.sun_history: deque[float] = deque(maxlen=4000)
         # static base CSI chosen from backtest
         self.base_csi: float = 50.0
-        self.threshold: float = 3
+        self.threshold: float = 1
         self.persistent_length: int = 1000     # consecutive ticks under effective CSI
-        self.per_trade_size: int = 5        # max units per conversion
+        self.per_trade_size: int = 1        # max units per conversion
 
     def act(self, state: TradingState) -> None:
         obs = state.observations.conversionObservations.get(self.symbol)
@@ -989,8 +989,23 @@ class MagnificentMacaronsStrategy(Strategy):
 
         pos = state.position.get(self.symbol, 0)
         self.convert(-pos)
-        self.per_trade_size = int(1 + (abs(sun - 50)/5))
 
+        # Calculate indices safely
+        min_sun = min(self.sun_history)
+        max_sun = max(self.sun_history)
+
+        # Convert to list to use index safely
+        sun_list = list(self.sun_history)
+        min_idx = sun_list.index(min_sun)
+        max_idx = sun_list.index(max_sun)
+
+        diff_sun_idx = max(1, abs(max_idx - min_idx))  # Avoid zero
+        sun_range = max(0.01, abs(max_sun - min_sun))  # Avoid zero
+
+        # Calculate new persistent length with protection against extreme values
+        new_persistent_length = int(3000 * (1/(sun_range/diff_sun_idx * 100)))
+        new_persistent_length = max(100, min(3000,new_persistent_length))
+        self.persistent_length = new_persistent_length
 
         # 1) Persistent high sunlight: convert and sell on market
         if len(self.sun_history) >= self.persistent_length:
@@ -1007,8 +1022,7 @@ class MagnificentMacaronsStrategy(Strategy):
             last_slice = list(self.sun_history)[-self.persistent_length:]
             if all(s < self.base_csi - self.threshold - 5 for s in last_slice):
                 sell_qty = min(self.per_trade_size, self.limit + pos)
-                obs = state.observations.conversionObservations.get(self.symbol)
-                if sell_qty > 0 and obs:
+                if sell_qty > 0:
                     market_price = int(obs.askPrice + obs.transportFees + obs.importTariff)
                     self.sell(market_price, sell_qty)
                 return
