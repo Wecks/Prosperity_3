@@ -1,6 +1,6 @@
 # IMC Prosperity 3 Trading Algorithms
 
-Trading algorithms developed for the IMC Prosperity 3 Global Trading Challenge - 2025.
+Trading algorithms developed for the IMC Prosperity 3 Global Trading Challenge 2025.
 
 ## Overview
 
@@ -11,7 +11,7 @@ This repository contains algorithmic trading strategies developed for the IMC Pr
 **IMC Prosperity 3** is a 15-day trading simulation divided into 5 rounds of 72 hours each. Participants develop Python programs to implement trading strategies with the goal of securing maximum profit in the form of "SeaShells".
 
 The competition involves:
-- Developing successful automated trading strategies in Python
+- Developing automated trading strategies in Python
 - Participating in manual trading exercises for bonus profits
 - Competing against teams from around the world
 
@@ -20,52 +20,81 @@ The competition involves:
 ```
 IMC-Prosperity/
 ├── strategies/           # Trading strategy implementations
+│   ├── manual/           # Some tables for manual trading decisions
+│   ├── old/              # Old strategies files
 │   ├── datamodel.py      # Data model classes provided by the competition
-│   ├── kelp_strategy.py  # Trading strategy for the KELP asset
-│   ├── envelope_strategy.py # Trading strategy using envelope methodology
-│   ├── rainforest_strategy.py # Strategy for the RAINFOREST asset
-│   └── tests/            # Strategy tests
-├── logs/                 # Strategy execution logs
+│   ├── round4.py         # Current trading strategy with all asset types
+│   └── test_macarons.py  # Test implementation for Magnificent Macarons
+├── logs/                 # Strategy execution logs and results
+├── backtester/           # Backtesting and optimization tools
+│   ├── backtest.sh       # Helper script for running backtests
+│   ├── backtest_all.sh   # Helper script for backtesting across all rounds
+│   └── optimizers/       # Parameter optimization scripts
 └── templates/            # Template files provided by the competition
 ```
 
-## Strategies
+## Implemented Strategies
 
-The repository contains several trading strategies developed and refined over the competition rounds:
+The repository contains these trading strategies:
 
-### Kelp Strategy
-A mean-reversion based strategy for trading the KELP asset with dynamic threshold adjustment and position pyramiding.
+### RainforestStrategy and KelpStrategy
+Market making strategies that determine true value based on mid-price and place buy/sell orders accordingly.
 
-### Envelope Strategy
-Trading strategy using envelope methodology that identifies overbought and oversold conditions.
+### SquidinkJamsStrategy
+A sophisticated trading strategy for SQUID_INK and JAMS assets that uses market microstructure and mean reversion principles.
 
-### Rainforest Strategy
-A specialized strategy for trading the RAINFOREST asset with pattern recognition approach that identifies key support and resistance zones. (mean-reversion as well I think)
+### PicnicBasketStrategy
+Arbitrage trading strategy for PICNIC_BASKET1, PICNIC_BASKET2, CROISSANTS, JAMS, and DJEMBES based on the price difference between baskets and their constituent parts.
+
+### VolcanicRockVoucherStrategy
+Option pricing strategy for VOLCANIC_ROCK_VOUCHER assets using Black-Scholes model with volatility parameter.
+
+### MagnificentMacaronsStrategy
+Conversion strategy for MAGNIFICENT_MACARONS based on sunlight index readings.
 
 ## Getting Started
 
-To run these strategies in the IMC Prosperity competition environment:
+To run these strategies in the backtesting environment:
 
-1. Clone this repository
-2. Pull the latest changes to ensure you have the most up-to-date code (git pull)
-3. Explore the strategy implementations in the `strategies/` directory
-   - Each strategy is optimized for specific assets
-   - The most effective strategies can be combined for maximum profit (in a single file - main_strategy.py)
-4. Submit your chosen strategy through the competition Dashboard
+1. Install the backtester:
+   ```bash
+   pip install -U prosperity3bt
+   ```
+
+2. Run a backtest:
+   ```bash
+   ./backtester/backtest.sh round4 1
+   ```
+
+3. Visualize results:
+   ```bash
+   prosperity3bt strategies/round4.py 1 --vis
+   ```
+
+See [BACKTESTER.md](BACKTESTER.md) for detailed backtesting instructions.
+
+## Optimization
+
+The repository includes optimization scripts for fine-tuning strategy parameters:
+
+```bash
+# Optimize parameters for a specific product
+./backtester/optimizers/optimize_jams.sh
+```
+
+Optimization results are saved to the `backtester/optimization_results/` directory.
 
 ## Results and Performance
 
-The strategies in this repository were developed and refined over the competition rounds, with performance metrics captured in the log files.
-These logs are available in your dashboard after algorithm submission, along with CSV result files.
+Performance metrics are captured in log files that can be found in the `logs/` directory after algorithm execution.
 
-For enhanced visualization of results, I use the tool created by [jmerle](https://github.com/jmerle):
-- [IMC Prosperity 3 Visualizer](https://jmerle.github.io/imc-prosperity-3-visualizer/?/visualizer)
+For enhanced visualization of results, use the [IMC Prosperity 3 Visualizer](https://jmerle.github.io/imc-prosperity-3-visualizer/?/visualizer).
 
 ## License
 
-[Specify your license here]
+MIT License
 
 ## Acknowledgments
 
 - [IMC Trading](https://www.imc.com/) for organizing the Prosperity Trading Challenge
-- [jmerle](https://github.com/jmerle) for the excellent visualization tool
+- [jmerle](https://github.com/jmerle) for the excellent backtester and visualization tools
