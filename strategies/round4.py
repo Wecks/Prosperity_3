@@ -903,7 +903,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 
         # Track days to expiration - starts at 7 days and decreases each round
         # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
-        self.days_to_expiration = 7-5  # Starting value - 3 because we are at round 4.
+        self.days_to_expiration = 7-3  # Starting value - 3 because we are at round 4.
         self.last_timestamp = None
 
     def get_signal(self, state: TradingState) -> Signal | None:
