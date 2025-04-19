@@ -1007,8 +1007,7 @@ class MagnificentMacaronsStrategy(Strategy):
             last_slice = list(self.sun_history)[-self.persistent_length:]
             if all(s < self.base_csi - self.threshold - 5 for s in last_slice):
                 sell_qty = min(self.per_trade_size, self.limit + pos)
-                obs = state.observations.conversionObservations.get(self.symbol)
-                if sell_qty > 0 and obs:
+                if sell_qty > 0:
                     market_price = int(obs.askPrice + obs.transportFees + obs.importTariff)
                     self.sell(market_price, sell_qty)
                 return
