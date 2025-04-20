@@ -962,7 +962,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
             self.volatility
         )
 
-        threshold = 0.02  # tuning possible
+        threshold = 0.001  # tuning possible
 
         if voucher_price > expected_price + threshold:
             return Signal.SHORT
