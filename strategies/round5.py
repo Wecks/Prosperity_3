@@ -900,10 +900,11 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         # Sigma is set so that the Black-Scholes value matches the initial coupon price at day 1 timestamp 0
         # TODO: Check what value matches the initial coupon price at day 1 timestamp 0.
         self.volatility = 0.2
+        self.spread_threshold = 3  # tolérance de spread entre niveaux 1 et 2
 
         # Track days to expiration - starts at 7 days and decreases each round
         # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
-        self.days_to_expiration = 7-2  # Starting value - 3 because we are at round 4.
+        self.days_to_expiration = 7-3  # Starting value - 3 because we are at round 4.
         self.last_timestamp = None
 
     def get_signal(self, state: TradingState) -> Signal | None:
@@ -925,6 +926,20 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 
         if len(state.order_depths[self.symbol].buy_orders) == 0 or len(state.order_depths[self.symbol].sell_orders) == 0:
             return
+
+        # Check spread depth for voucher
+        order_depth = state.order_depths[self.symbol]
+        if len(order_depth.sell_orders) >= 2 and len(order_depth.buy_orders) >= 2:
+            best_ask = min(order_depth.sell_orders.keys())
+            second_ask = sorted(order_depth.sell_orders.keys())[1]
+            best_bid = max(order_depth.buy_orders.keys())
+            second_bid = sorted(order_depth.buy_orders.keys(), reverse=True)[1]
+
+            spread_ask = second_ask - best_ask
+            spread_bid = best_bid - second_bid
+
+            if spread_ask > self.spread_threshold or spread_bid > self.spread_threshold:
+                return  # ❌ carnet trop creux, on skip le trade
 
         # Get current prices
         volcanic_rock_price = self.get_mid_price(state, "VOLCANIC_ROCK")
