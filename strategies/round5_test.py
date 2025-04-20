@@ -850,58 +850,99 @@ class SquidinkJamsStrategy(Strategy):
             self.sell(mm_sell_price, remaining_sell)
 
 class PicnicBasketStrategy(SignalStrategy):
-     # Class-level default thresholds
-     DEFAULT_THRESHOLDS = {
-        # BEST PERFORM IN REAL (100K TIMESTAMPS)
-        #  "CROISSANTS": {"long": -100, "short": 150},
-        #  "JAMS": {"long": 0, "short": 150},
-        #  "DJEMBES": {"long": -30, "short": 250},
-        #  "PICNIC_BASKET1": {"long": -60, "short": 110},
-        #  "PICNIC_BASKET2": {"long": -60, "short": 120}
+    # Seuils inchangés
+    DEFAULT_THRESHOLDS = {
+        "CROISSANTS":    {"long": -180, "short": 150},
+        "JAMS":          {"long":    0, "short": 150},
+        "DJEMBES":       {"long": -150, "short": 250},
+        "PICNIC_BASKET1":{"long":  -60, "short": 130},
+        "PICNIC_BASKET2":{"long": -100, "short": 140},
+    }
+    THRESHOLDS = DEFAULT_THRESHOLDS.copy()
 
-        # BEST PERFORM IN BACKTEST (6M TIMESTAMPS)
-         "CROISSANTS": {"long": -180, "short": 150},
-         "JAMS": {"long": 0, "short": 150},
-         "DJEMBES": {"long": -150, "short": 250},
-         "PICNIC_BASKET1": {"long": -60, "short": 130},
-         "PICNIC_BASKET2": {"long": -100, "short": 140}
-     }
+    def __init__(self, symbol: Symbol, limit: int, hold_ticks: int = 3) -> None:
+        super().__init__(symbol, limit)
+        # nombre de ticks consécutifs nécessaires pour valider un signal
+        self.hold_ticks = hold_ticks
+        # compteurs d’hystérésis
+        self.long_counter = 0
+        self.short_counter = 0
+        self.neutral_counter = 0
 
-     # Override class-level thresholds with values from command line
-     THRESHOLDS = DEFAULT_THRESHOLDS.copy()
+    def get_signal(self, state: TradingState) -> Signal | None:
+        # votre logique de base (inchangée)
+        if any(sym not in state.order_depths for sym in ["CROISSANTS","JAMS","DJEMBES","PICNIC_BASKET1","PICNIC_BASKET2"]):
+            return None
 
-     def __init__(self, symbol: Symbol, limit: int) -> None:
-         super().__init__(symbol, limit)
-         # Each instance will use the class-level thresholds
+        croissants    = self.get_mid_price(state, "CROISSANTS")
+        jams          = self.get_mid_price(state, "JAMS")
+        djembes       = self.get_mid_price(state, "DJEMBES")
+        basket1_price = self.get_mid_price(state, "PICNIC_BASKET1")
+        basket2_price = self.get_mid_price(state, "PICNIC_BASKET2")
 
-     def get_signal(self, state: TradingState) -> Signal | None:
-         if any(symbol not in state.order_depths for symbol in ["CROISSANTS", "JAMS", "DJEMBES", "PICNIC_BASKET1", "PICNIC_BASKET2"]):
-             return
+        diff = {
+            "PICNIC_BASKET1": basket1_price - 6*croissants - 3*jams - djembes,
+            "PICNIC_BASKET2": basket2_price - 4*croissants - 2*jams,
+            "CROISSANTS":     basket1_price - 6*croissants - 3*jams - djembes,
+            "JAMS":           basket1_price - 6*croissants - 3*jams - djembes,
+            "DJEMBES":        basket1_price - 6*croissants - 3*jams - djembes,
+        }[self.symbol]
 
-         croissants = self.get_mid_price(state, "CROISSANTS")
-         jams = self.get_mid_price(state, "JAMS")
-         djembes = self.get_mid_price(state, "DJEMBES")
-         picnic_basket1 = self.get_mid_price(state, "PICNIC_BASKET1")
-         picnic_basket2 = self.get_mid_price(state, "PICNIC_BASKET2")
+        long_th  = PicnicBasketStrategy.THRESHOLDS[self.symbol]["long"]
+        short_th = PicnicBasketStrategy.THRESHOLDS[self.symbol]["short"]
 
-         diff = {
-             "PICNIC_BASKET1": picnic_basket1 - 6 * croissants - 3 * jams - djembes,
-             "PICNIC_BASKET2": picnic_basket2 - 4 * croissants - 2 * jams,
-             "CROISSANTS": picnic_basket1 - 6 * croissants - 3 * jams - djembes,  # Using basket1 for CROISSANTS
-             "JAMS": picnic_basket1 - 6 * croissants - 3 * jams - djembes,        # Using basket1 for JAMS
-             "DJEMBES": picnic_basket1 - 6 * croissants - 3 * jams - djembes,     # Using basket1 for DJEMBES
-         }[self.symbol]
+        if diff < long_th:
+            return Signal.LONG
+        elif diff > short_th:
+            return Signal.SHORT
+        else:
+            return None
 
-         # Get thresholds for this symbol
-         long_threshold = PicnicBasketStrategy.THRESHOLDS[self.symbol]["long"]
-         short_threshold = PicnicBasketStrategy.THRESHOLDS[self.symbol]["short"]
+    def act(self, state: TradingState) -> None:
+        new_signal = self.get_signal(state)
 
-         if diff < long_threshold:
-             return Signal.LONG
-         elif diff > short_threshold:
-             return Signal.SHORT
+        # 1) Mettre à jour les compteurs d’hystérésis
+        if new_signal == Signal.LONG:
+            self.long_counter   += 1
+            self.short_counter  = 0
+            self.neutral_counter = 0
+        elif new_signal == Signal.SHORT:
+            self.short_counter  += 1
+            self.long_counter   = 0
+            self.neutral_counter = 0
+        else:
+            self.neutral_counter += 1
+            self.long_counter    = 0
+            self.short_counter   = 0
 
-         return None
+        # 2) Appliquer le signal uniquement si stable pendant hold_ticks
+        if self.long_counter >= self.hold_ticks and self.signal != Signal.LONG:
+            self.signal = Signal.LONG
+        elif self.short_counter >= self.hold_ticks and self.signal != Signal.SHORT:
+            self.signal = Signal.SHORT
+        elif self.neutral_counter >= self.hold_ticks and self.signal != Signal.NEUTRAL:
+            self.signal = Signal.NEUTRAL
+
+        # 3) Exécuter la logique d’achat/vente basée sur self.signal
+        position     = state.position.get(self.symbol, 0)
+        order_depth  = state.order_depths[self.symbol]
+
+        if self.signal == Signal.NEUTRAL:
+            # liquidation progressive : on vend/rachète la moitié de la position à chaque tick
+            qty = abs(position) // 2 or abs(position)
+            if position > 0:
+                self.sell(self.get_sell_price(order_depth), qty)
+            elif position < 0:
+                self.buy(self.get_buy_price(order_depth), qty)
+
+        elif self.signal == Signal.SHORT:
+            # on vend jusqu’à la limite
+            self.sell(self.get_sell_price(order_depth), self.limit + position)
+
+        elif self.signal == Signal.LONG:
+            # on achète jusqu’à la limite
+            self.buy(self.get_buy_price(order_depth), self.limit - position)
+
 
 class VolcanicRockVoucherStrategy(SignalStrategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
