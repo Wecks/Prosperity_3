@@ -913,7 +913,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 
         # ✅ Ajustement dynamique de la volatilité ici
         if self.days_to_expiration <= 1:
-            self.volatility = 0.7
+            self.volatility = 0.2
         elif self.days_to_expiration == 2:
             self.volatility = 0.2
         elif self.days_to_expiration == 3:
