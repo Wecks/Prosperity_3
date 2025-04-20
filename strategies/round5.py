@@ -904,7 +904,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         self.last_timestamp = None
 
     def update_volatility(self):
-        if len(self.rock_prices) < 2:
+        if len(self.rock_prices) < 3:  # ➕ corrige ici : besoin de 3 prix → 2 returns
             return
 
         returns = [
@@ -912,8 +912,12 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
             for i in range(len(self.rock_prices) - 1)
         ]
 
+        if len(returns) < 2:
+            return  # ✅ sécurité supplémentaire
+
         daily_vol = statistics.stdev(returns)
         self.volatility = daily_vol * math.sqrt(365)
+
 
     def get_signal(self, state: TradingState) -> Signal | None:
         # Mise à jour du temps jusqu'à expiration
