@@ -696,6 +696,11 @@ class RainforestStrategy(MarketMakingStrategy):
         # return 10000
         return round(self.get_mid_price(state, self.symbol)) #More Flexible but a bit less performant in backtest - Same performance in live round2
 
+class CroissantsStrategy(MarketMakingStrategy):
+    def get_true_value(self, state: TradingState) -> int:
+        return round(self.get_mid_price(state, self.symbol))
+
+
 class KelpStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         return round(self.get_mid_price(state, self.symbol))
@@ -1056,10 +1061,10 @@ class Trader:
             "KELP": KelpStrategy,
             "SQUID_INK": SquidinkJamsStrategy,
             "JAMS": SquidinkJamsStrategy,
-            "CROISSANTS": PicnicBasketStrategy,
-            "DJEMBES": PicnicBasketStrategy,
-            "PICNIC_BASKET1": PicnicBasketStrategy,
-            "PICNIC_BASKET2": PicnicBasketStrategy,
+            "CROISSANTS": CroissantsStrategy,  # ✅ nouvelle stratégie market making,
+            #"DJEMBES": PicnicBasketStrategy,
+            #"PICNIC_BASKET1": PicnicBasketStrategy,
+            #"PICNIC_BASKET2": PicnicBasketStrategy,
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
