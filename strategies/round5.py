@@ -896,73 +896,61 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         # Extract strike price from symbol name (e.g., VOLCANIC_ROCK_VOUCHER_10000 -> 10000)
         self.strike_price = float(symbol.split('_')[-1])
 
-        # Set volatility parameter (may need tuning based on market behavior)
-        # Sigma is set so that the Black-Scholes value matches the initial coupon price at day 1 timestamp 0
-        # TODO: Check what value matches the initial coupon price at day 1 timestamp 0.
+        # Valeur initiale par défaut (sera override dynamiquement)
+        self.volatility = 0.2
 
-
-        # Track days to expiration - starts at 7 days and decreases each round
-        # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
-        self.days_to_expiration = 7-4  # Starting value - 3 because we are at round 4.
+        # Suivi du temps jusqu'à l'expiration
+        self.days_to_expiration = 7 - 4  # Ajuster selon le round courant
         self.last_timestamp = None
 
     def get_signal(self, state: TradingState) -> Signal | None:
-        # Update days to expiration based on timestamp (one round = one day)
-        # Update days to expiration based on timestamp (1 round = 100 ticks)
+        # MAJ des jours restants selon le timestamp
         if self.last_timestamp is not None and state.timestamp > self.last_timestamp:
             timestamp_diff = (state.timestamp - self.last_timestamp) / 100
             if timestamp_diff >= 1:
                 self.days_to_expiration -= int(timestamp_diff)
-
         self.last_timestamp = state.timestamp
 
-        # Ajustement dynamique de la volatilité en fonction du temps restant
+        # ✅ Ajustement dynamique de la volatilité ici
         if self.days_to_expiration <= 1:
-            self.volatility = 0.7  # Très proche de l’expiration
+            self.volatility = 0.7
         elif self.days_to_expiration == 2:
-            self.volatility = 0.2
+            self.volatility = 0.4
         elif self.days_to_expiration == 3:
-            self.volatility = 0.2  # Meilleure zone d’arbitrage
+            self.volatility = 0.25
         else:
-            self.volatility = 0.2  # Début, peu de mouvements
+            self.volatility = 0.2
 
-        """self.volatility = 0.2"""
-
-        # If expired or no market data, don't trade
+        # Conditions d’arrêt
         if self.days_to_expiration <= 0 or "VOLCANIC_ROCK" not in state.order_depths:
             return
 
-        # Make sure we have market data for the underlying and the voucher
-        if len(state.order_depths["VOLCANIC_ROCK"].buy_orders) == 0 or len(state.order_depths["VOLCANIC_ROCK"].sell_orders) == 0:
+        if not state.order_depths["VOLCANIC_ROCK"].buy_orders or not state.order_depths["VOLCANIC_ROCK"].sell_orders:
             return
 
-        if len(state.order_depths[self.symbol].buy_orders) == 0 or len(state.order_depths[self.symbol].sell_orders) == 0:
+        if not state.order_depths[self.symbol].buy_orders or not state.order_depths[self.symbol].sell_orders:
             return
 
-        # Get current prices
+        # Calcul des prix
         volcanic_rock_price = self.get_mid_price(state, "VOLCANIC_ROCK")
         voucher_price = self.get_mid_price(state, self.symbol)
-        # Convert days to years for Black-Scholes
         expiration_time = self.days_to_expiration / 365
         risk_free_rate = 0
 
-        # Calculate expected price using Black-Scholes
         expected_price = self.black_scholes(
-            volcanic_rock_price,  # Current price of VOLCANIC_ROCK (underlying)
-            self.strike_price,    # Strike price from the voucher
-            expiration_time,      # Time to expiration in years
-            risk_free_rate,       # Risk-free rate
-            self.volatility       # Volatility parameter
+            volcanic_rock_price,
+            self.strike_price,
+            expiration_time,
+            risk_free_rate,
+            self.volatility
         )
 
-        # Trading threshold - adjust these values based on market behavior
-        threshold = 0.02  # Threshold for trading signal
+        threshold = 0.02
 
-        # Generate signals based on pricing difference
         if voucher_price > expected_price + threshold:
-            return Signal.SHORT  # Voucher is overpriced
+            return Signal.SHORT
         elif voucher_price < expected_price - threshold:
-            return Signal.LONG   # Voucher is underpriced
+            return Signal.LONG
 
     def black_scholes(
         self,
@@ -972,7 +960,6 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         risk_free_rate: float,
         volatility: float,
     ) -> float:
-        """Calculate the Black-Scholes price for an option."""
         d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility ** 2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
         d2 = d1 - volatility * math.sqrt(expiration_time)
         return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
