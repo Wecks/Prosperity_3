@@ -900,7 +900,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         # Sigma is set so that the Black-Scholes value matches the initial coupon price at day 1 timestamp 0
         # TODO: Check what value matches the initial coupon price at day 1 timestamp 0.
         self.volatility = 0.2
-        self.spread_threshold = 3  # tolérance de spread entre niveaux 1 et 2
+        self.spread_threshold = 6  # tolérance de spread entre niveaux 1 et 2
 
         # Track days to expiration - starts at 7 days and decreases each round
         # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
