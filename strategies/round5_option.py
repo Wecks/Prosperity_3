@@ -494,7 +494,7 @@ class VolatilityManager:
             cls._instance.strike_implied_vols = {}  # K → σₖ mapping
             cls._instance.atm_strike = None         # At-the-money strike
             cls._instance.master_vol = None         # Master volatility (ATM or median)
-            cls._instance.lambda_ = 0.84            # EWMA decay factor
+            cls._instance.lambda_ = 0.94            # EWMA decay factor
             cls._instance.ewma_var = 0.0            # Current variance estimate
             cls._instance.last_price = None         # Last underlying price
         return cls._instance
@@ -587,7 +587,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         fair = self.black_scholes(vr_price, self.strike_price, T, r, self.volatility)
         logger.print(f"Strike {self.strike_price} fair: {fair:.2f}, market: {voucher_pr:.2f}")
 
-        threshold = 0.001
+        threshold = 0.01
         if voucher_pr > fair * (1 + threshold):
             return Signal.SHORT
         if voucher_pr < fair * (1 - threshold):
