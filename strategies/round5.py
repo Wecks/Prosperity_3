@@ -918,7 +918,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 
         # Ajustement dynamique de la volatilité en fonction du temps restant
         if self.days_to_expiration <= 1:
-            self.volatility = 0.7  # Très proche de l’expiration
+            self.volatility = 0.2  # Très proche de l’expiration
         elif self.days_to_expiration == 2:
             self.volatility = 0.2
         elif self.days_to_expiration == 3:
@@ -926,6 +926,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         else:
             self.volatility = 0.2  # Début, peu de mouvements
 
+"""self.volatility = 0.2"""
 
         # If expired or no market data, don't trade
         if self.days_to_expiration <= 0 or "VOLCANIC_ROCK" not in state.order_depths:
