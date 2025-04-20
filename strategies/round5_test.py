@@ -524,22 +524,35 @@ class SignalStrategy(Strategy):
         raise NotImplementedError()
 
     def act(self, state: TradingState) -> None:
+        # 1) calcul du nouveau signal
         new_signal = self.get_signal(state)
         if new_signal is not None:
+            # on passe LONG ou SHORT
             self.signal = new_signal
+        else:
+            # sinon on repasse NEUTRAL pour liquider
+            self.signal = Signal.NEUTRAL
 
+        # 2) infos pratiques
         position = state.position.get(self.symbol, 0)
         order_depth = state.order_depths[self.symbol]
 
+        # 3) SI on est NEUTRAL, on liquidera la position existante
         if self.signal == Signal.NEUTRAL:
             if position < 0:
+                # on rachète tout
                 self.buy(self.get_buy_price(order_depth), -position)
             elif position > 0:
+                # on vend tout
                 self.sell(self.get_sell_price(order_depth), position)
+
+        # 4) SINON, on agit comme avant en SHORT ou LONG
         elif self.signal == Signal.SHORT:
             self.sell(self.get_sell_price(order_depth), self.limit + position)
+
         elif self.signal == Signal.LONG:
             self.buy(self.get_buy_price(order_depth), self.limit - position)
+
 
     def get_buy_price(self, order_depth: OrderDepth) -> int:
         return min(order_depth.sell_orders.keys())
@@ -695,21 +708,6 @@ class RainforestStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
         # return 10000
         return round(self.get_mid_price(state, self.symbol)) #More Flexible but a bit less performant in backtest - Same performance in live round2
-
-class CroissantMMStrategy(MarketMakingStrategy):
-    def __init__(self, symbol: Symbol, limit: int) -> None:
-        super().__init__(symbol, limit)
-        self.prices = deque(maxlen=20)
-
-    def get_true_value(self, state: TradingState) -> int:
-        mid = self.get_mid_price(state, self.symbol)
-        self.prices.append(mid)
-        if len(self.prices) < self.prices.maxlen:
-            return round(mid)  # fallback: use raw mid if no history
-        # Use exponential moving average (EMA) as fair value
-        ema = TechnicalIndicators.exponential_moving_average(list(self.prices), window=10)
-        return round(ema[-1])
-
 
 class KelpStrategy(MarketMakingStrategy):
     def get_true_value(self, state: TradingState) -> int:
@@ -1071,10 +1069,10 @@ class Trader:
             "KELP": KelpStrategy,
             "SQUID_INK": SquidinkJamsStrategy,
             "JAMS": SquidinkJamsStrategy,
-            "CROISSANTS": CroissantMMStrategy,  # ✅ nouvelle stratégie market making,
-            #"DJEMBES": PicnicBasketStrategy,
-            #"PICNIC_BASKET1": PicnicBasketStrategy,
-            #"PICNIC_BASKET2": PicnicBasketStrategy,
+            "CROISSANTS": PicnicBasketStrategy,
+            "DJEMBES": PicnicBasketStrategy,
+            "PICNIC_BASKET1": PicnicBasketStrategy,
+            "PICNIC_BASKET2": PicnicBasketStrategy,
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
