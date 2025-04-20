@@ -514,44 +514,40 @@ class Signal(IntEnum):
     LONG = 2
 
 class SignalStrategy(Strategy):
-    def __init__(self, symbol: Symbol, limit: int) -> None:
-        super().__init__(symbol, limit)
-
-        self.signal = Signal.NEUTRAL
-
-    @abstractmethod
-    def get_signal(self, state: TradingState) -> Signal | None:
-        raise NotImplementedError()
+    # … ton __init__ et get_signal restent inchangés …
 
     def act(self, state: TradingState) -> None:
+        # 1) calcul et maj du signal
         new_signal = self.get_signal(state)
         if new_signal is not None:
+            # on prend LONG ou SHORT
             self.signal = new_signal
+        else:
+            # on revient à NEUTRAL pour liquider
+            self.signal = Signal.NEUTRAL
 
+        # 2) on récupère la position courante et le carnet d’ordres
         position = state.position.get(self.symbol, 0)
         order_depth = state.order_depths[self.symbol]
 
+        # 3) liquidation quand on est en NEUTRAL
         if self.signal == Signal.NEUTRAL:
+            # position < 0 → on rachète pour revenir à 0
             if position < 0:
                 self.buy(self.get_buy_price(order_depth), -position)
+            # position > 0 → on vend pour revenir à 0
             elif position > 0:
                 self.sell(self.get_sell_price(order_depth), position)
+
+        # 4) comportement normal en SHORT ou LONG
         elif self.signal == Signal.SHORT:
+            # remplace par ton code SHORT actuel
             self.sell(self.get_sell_price(order_depth), self.limit + position)
+
         elif self.signal == Signal.LONG:
+            # remplace par ton code LONG actuel
             self.buy(self.get_buy_price(order_depth), self.limit - position)
 
-    def get_buy_price(self, order_depth: OrderDepth) -> int:
-        return min(order_depth.sell_orders.keys())
-
-    def get_sell_price(self, order_depth: OrderDepth) -> int:
-        return max(order_depth.buy_orders.keys())
-
-    def save(self) -> JSON:
-        return self.signal.value
-
-    def load(self, data: JSON) -> None:
-        self.signal = Signal(data)
 
 class MarketMakingStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
