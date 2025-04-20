@@ -895,59 +895,71 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         super().__init__(symbol, limit)
         self.cdf = NormalDist().cdf
 
+        # Strike price (e.g., VOLCANIC_ROCK_VOUCHER_10000)
         self.strike_price = float(symbol.split('_')[-1])
-        self.days_to_expiration = 7 - 4  # ajuste selon round actuel
+
+        # Init fallback volatility (will be overwritten dynamically)
+        self.volatility = 0.2
+        self.rock_prices = deque(maxlen=20)
+
+        self.days_to_expiration = 7 - 4  # adapt to round if needed
         self.last_timestamp = None
 
-        self.price_history: deque[float] = deque(maxlen=50)  # historique pour vol
-        self.volatility = 0.2  # valeur par défaut fallback
-
-    def estimate_realized_volatility(self) -> float:
-        prices = list(self.price_history)
-        if len(prices) < 10:
-            return 0.2  # fallback si pas assez de données
-
-        log_returns = np.diff(np.log(prices))
-        volatility = np.std(log_returns) * np.sqrt(365)  # annualisation
-        return volatility
-
     def get_signal(self, state: TradingState) -> Signal | None:
+        # Update days to expiration
         if self.last_timestamp is not None and state.timestamp > self.last_timestamp:
             timestamp_diff = (state.timestamp - self.last_timestamp) / 100
             if timestamp_diff >= 1:
                 self.days_to_expiration -= int(timestamp_diff)
         self.last_timestamp = state.timestamp
 
-        # Vérif données disponibles
-        if self.days_to_expiration <= 0 or "VOLCANIC_ROCK" not in state.order_depths:
+        # ⬇️ Append current price to price history for vol calc
+        if "VOLCANIC_ROCK" not in state.order_depths:
+            return
+        underlying_price = self.get_mid_price(state, "VOLCANIC_ROCK")
+        if underlying_price is None:
+            return
+        self.rock_prices.append(underlying_price)
+
+        # ✅ Calculate dynamic volatility if enough data
+        if len(self.rock_prices) >= 10:
+            returns = [
+                math.log(self.rock_prices[i+1] / self.rock_prices[i])
+                for i in range(len(self.rock_prices) - 1)
+            ]
+            std_dev = statistics.stdev(returns)
+            self.volatility = std_dev * math.sqrt(365)  # annualized
+            # logger.print(f"[{self.symbol}] Volatility updated to {self.volatility:.4f}")
+
+        # Stop if expired
+        if self.days_to_expiration <= 0:
             return
 
-        if len(state.order_depths["VOLCANIC_ROCK"].buy_orders) == 0 or len(state.order_depths["VOLCANIC_ROCK"].sell_orders) == 0:
-            return
-        if len(state.order_depths[self.symbol].buy_orders) == 0 or len(state.order_depths[self.symbol].sell_orders) == 0:
+        # Check for data availability
+        if self.symbol not in state.order_depths or \
+           len(state.order_depths[self.symbol].buy_orders) == 0 or \
+           len(state.order_depths[self.symbol].sell_orders) == 0:
             return
 
-        # 🔄 Récupère prix spot et actualise l'historique
-        volcanic_rock_price = self.get_mid_price(state, "VOLCANIC_ROCK")
-        self.price_history.append(volcanic_rock_price)
+        if len(state.order_depths["VOLCANIC_ROCK"].buy_orders) == 0 or \
+           len(state.order_depths["VOLCANIC_ROCK"].sell_orders) == 0:
+            return
+
+        # Current prices
         voucher_price = self.get_mid_price(state, self.symbol)
-
-        # 📉 Volatilité dynamique
-        self.volatility = self.estimate_realized_volatility()
 
         expiration_time = self.days_to_expiration / 365
         risk_free_rate = 0
 
         expected_price = self.black_scholes(
-            volcanic_rock_price,
+            underlying_price,
             self.strike_price,
             expiration_time,
             risk_free_rate,
             self.volatility
         )
 
-        threshold = 0.02  # marge de tolérance
-
+        threshold = 0.02
         if voucher_price > expected_price + threshold:
             return Signal.SHORT
         elif voucher_price < expected_price - threshold:
@@ -961,9 +973,6 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         risk_free_rate: float,
         volatility: float,
     ) -> float:
-        if expiration_time <= 0 or volatility == 0:
-            return max(asset_price - strike_price, 0)
-
         d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility ** 2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
         d2 = d1 - volatility * math.sqrt(expiration_time)
         return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
