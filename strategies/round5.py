@@ -896,32 +896,34 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         # Extract strike price from symbol name (e.g., VOLCANIC_ROCK_VOUCHER_10000 -> 10000)
         self.strike_price = float(symbol.split('_')[-1])
 
-        # Valeur initiale par défaut (sera override dynamiquement)
-        self.volatility = 0.2
-
-        # Suivi du temps jusqu'à l'expiration
-        self.days_to_expiration = 7 - 4  # Ajuster selon le round courant
+        # Track days to expiration - starts at 7 days and decreases each round
+        self.days_to_expiration = 7 - 4  # Exemple : si round 5, on démarre à J=3
         self.last_timestamp = None
 
+        # Volatility will be updated dynamically
+        self.volatility = 0.2
+
+    def update_volatility(self) -> None:
+        """Ajuste dynamiquement la volatilité selon le temps restant avant expiration."""
+        if self.days_to_expiration <= 1:
+            self.volatility = 0.7  # Très proche de l’expiration : volatilité élevée
+        elif self.days_to_expiration == 2:
+            self.volatility = 0.4
+        elif self.days_to_expiration == 3:
+            self.volatility = 0.25  # Zone optimale d'arbitrage
+        else:
+            self.volatility = 0.2  # Début du round : volatilité plus faible
+
     def get_signal(self, state: TradingState) -> Signal | None:
-        # MAJ des jours restants selon le timestamp
+        # Update days to expiration based on timestamp (1 round = 100 ticks)
         if self.last_timestamp is not None and state.timestamp > self.last_timestamp:
             timestamp_diff = (state.timestamp - self.last_timestamp) / 100
             if timestamp_diff >= 1:
                 self.days_to_expiration -= int(timestamp_diff)
+
         self.last_timestamp = state.timestamp
 
-        # ✅ Ajustement dynamique de la volatilité ici
-        if self.days_to_expiration <= 1:
-            self.volatility = 0.2
-        elif self.days_to_expiration == 2:
-            self.volatility = 0.7
-        elif self.days_to_expiration == 3:
-            self.volatility = 0.7
-        else:
-            self.volatility = 0.2
-
-        # Conditions d’arrêt
+        # If expired or no market data, don't trade
         if self.days_to_expiration <= 0 or "VOLCANIC_ROCK" not in state.order_depths:
             return
 
@@ -931,12 +933,18 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         if not state.order_depths[self.symbol].buy_orders or not state.order_depths[self.symbol].sell_orders:
             return
 
-        # Calcul des prix
+        # Get current prices
         volcanic_rock_price = self.get_mid_price(state, "VOLCANIC_ROCK")
         voucher_price = self.get_mid_price(state, self.symbol)
+
+        # Convert days to years for Black-Scholes
         expiration_time = self.days_to_expiration / 365
         risk_free_rate = 0
 
+        # ✅ Mise à jour dynamique de la volatilité
+        self.update_volatility()
+
+        # Calculate expected price using Black-Scholes
         expected_price = self.black_scholes(
             volcanic_rock_price,
             self.strike_price,
@@ -945,8 +953,10 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
             self.volatility
         )
 
+        # Trading threshold - adjust if needed
         threshold = 0.02
 
+        # Generate signals
         if voucher_price > expected_price + threshold:
             return Signal.SHORT
         elif voucher_price < expected_price - threshold:
@@ -960,9 +970,14 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         risk_free_rate: float,
         volatility: float,
     ) -> float:
+        """Calculate the Black-Scholes price for an option."""
+        if expiration_time <= 0 or volatility <= 0:
+            return max(asset_price - strike_price, 0)
+
         d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility ** 2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
         d2 = d1 - volatility * math.sqrt(expiration_time)
         return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
+
 
 class MagnificentMacaronsStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
