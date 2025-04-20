@@ -891,77 +891,66 @@ class PicnicBasketStrategy(SignalStrategy):
          return None
 
 class VolcanicRockVoucherStrategy(SignalStrategy):
-    def __init__(self, symbol: str, limit: int) -> None:
+    def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
         self.cdf = NormalDist().cdf
-        # Strike (ex: "VOLCANIC_ROCK_VOUCHER_10000")
+
+        # Strike (ex: VOLCANIC_ROCK_VOUCHER_10000)
         self.strike_price = float(symbol.split('_')[-1])
-        # Historique des prix du sous-jacent
-        self.rock_prices = deque(maxlen=30)
+
+        self.rock_prices = deque(maxlen=30)  # historique des prix
         self.volatility = 0.2  # fallback initial
-        # Jours jusqu’à expiration (à recalculer round par round)
-        self.days_to_expiration = 7 - 4
+        self.days_to_expiration = 7 - 4  # adapte ici selon le round
         self.last_timestamp = None
 
     def update_volatility(self):
-        print(f"[update_volatility] rock_prices={list(self.rock_prices)}")
-        # Au moins 3 prix pour 2 log-returns
-        if len(self.rock_prices) < 3:
-            print("[update_volatility] pas assez de prix, skip")
+        if len(self.rock_prices) < 3:  # ➕ corrige ici : besoin de 3 prix → 2 returns
             return
 
         returns = [
             math.log(self.rock_prices[i+1] / self.rock_prices[i])
             for i in range(len(self.rock_prices) - 1)
         ]
-        print(f"[update_volatility] raw returns={returns}")
+
         if len(returns) < 2:
-            print("[update_volatility] pas assez de returns, skip")
-            return
+            return  # ✅ sécurité supplémentaire
 
         daily_vol = statistics.stdev(returns)
-        new_vol = daily_vol * math.sqrt(365)
-        print(f"[update_volatility] daily_vol={daily_vol:.6f}, annual_vol={new_vol:.4f}")
-        self.volatility = new_vol
+        self.volatility = daily_vol * math.sqrt(365)
+
 
     def get_signal(self, state: TradingState) -> Signal | None:
-        print(f"[get_signal START] symbol={self.symbol}  days_to_expiry={self.days_to_expiration}  rock_prices={list(self.rock_prices)}")
-
         # Mise à jour du temps jusqu'à expiration
         if self.last_timestamp is not None and state.timestamp > self.last_timestamp:
-            elapsed = (state.timestamp - self.last_timestamp) / 100
-            if elapsed >= 1:
-                self.days_to_expiration -= int(elapsed)
+            timestamp_diff = (state.timestamp - self.last_timestamp) / 100
+            if timestamp_diff >= 1:
+                self.days_to_expiration -= int(timestamp_diff)
         self.last_timestamp = state.timestamp
 
         if self.days_to_expiration <= 0:
-            print("[get_signal] → expiry passed, returning")
             return
 
+        # Vérifie qu'on a les données nécessaires
         if "VOLCANIC_ROCK" not in state.order_depths:
-            print("[get_signal] → no underlying depth, returning")
             return
         underlying_price = self.get_mid_price(state, "VOLCANIC_ROCK")
         if underlying_price is None:
-            print("[get_signal] → mid PRICE None, returning")
             return
-
         self.rock_prices.append(underlying_price)
-        self.update_volatility()
-        print(f"[get_signal] → updated vol = {self.volatility:.4f}")
 
-        if self.symbol not in state.order_depths:
-            print(f"[get_signal] → voucher {self.symbol} not in depths, returning")
+        # 🔄 Met à jour la volatilité dynamique
+        self.update_volatility()
+
+        if self.symbol not in state.order_depths or \
+           len(state.order_depths[self.symbol].buy_orders) == 0 or \
+           len(state.order_depths[self.symbol].sell_orders) == 0:
             return
-        if len(state.order_depths[self.symbol].buy_orders) == 0 or len(state.order_depths[self.symbol].sell_orders) == 0:
-            print(f"[get_signal] → no liquidity on voucher {self.symbol}, returning")
+
+        if len(state.order_depths["VOLCANIC_ROCK"].buy_orders) == 0 or \
+           len(state.order_depths["VOLCANIC_ROCK"].sell_orders) == 0:
             return
 
         voucher_price = self.get_mid_price(state, self.symbol)
-        if voucher_price is None:
-            print(f"[get_signal] → mid voucher PRICE None, returning")
-            return
-
         expiration_time = self.days_to_expiration / 365
         risk_free_rate = 0
 
@@ -972,18 +961,13 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
             risk_free_rate,
             self.volatility
         )
-        print(f"[get_signal] → underlying={underlying_price:.2f}, voucher={voucher_price:.2f}, expected={expected_price:.2f}")
 
-        threshold = 0.02  # tuning possible
+        threshold = 0.001  # tuning possible
+
         if voucher_price > expected_price + threshold:
-            print("[get_signal] → SIGNAL SHORT")
             return Signal.SHORT
         elif voucher_price < expected_price - threshold:
-            print("[get_signal] → SIGNAL LONG")
             return Signal.LONG
-        else:
-            print("[get_signal] → no signal (within threshold)")
-            return
 
     def black_scholes(
         self,
@@ -993,17 +977,11 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         risk_free_rate: float,
         volatility: float,
     ) -> float:
-        if expiration_time <= 0 or volatility <= 0:
+        if expiration_time == 0 or volatility == 0:
             return max(asset_price - strike_price, 0)
-        d1 = (
-            math.log(asset_price / strike_price)
-            + (risk_free_rate + volatility**2 / 2) * expiration_time
-        ) / (volatility * math.sqrt(expiration_time))
+        d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility**2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
         d2 = d1 - volatility * math.sqrt(expiration_time)
-        return (
-            asset_price * self.cdf(d1)
-            - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
-        )
+        return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
 
 class MagnificentMacaronsStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
