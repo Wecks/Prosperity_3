@@ -696,41 +696,47 @@ class RainforestStrategy(MarketMakingStrategy):
         # return 10000
         return round(self.get_mid_price(state, self.symbol)) #More Flexible but a bit less performant in backtest - Same performance in live round2
 
-class SymmetryScalperStrategy(Strategy):
+class SymmetryExploiterStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
-        self.window = deque(maxlen=5)
+        self.lookback = 10  # nombre de trades à regarder
         self.charlie_name = "Charlie"
         self.caesar_name = "Caesar"
 
     def act(self, state: TradingState) -> None:
-        trades = state.market_trades.get(self.symbol, [])
-        recent_trades = trades[-10:]
+        if self.symbol not in state.market_trades:
+            return
+
+        trades = state.market_trades[self.symbol][-self.lookback:]
+        caesar_shorts = 0
+        charlie_longs = 0
+
+        for trade in trades:
+            if trade.buyer == self.charlie_name:
+                charlie_longs += 1
+            if trade.seller == self.caesar_name:
+                caesar_shorts += 1
+
         position = state.position.get(self.symbol, 0)
-        mid = self.get_mid_price(state, self.symbol)
-
-        charlie_buy_pressure = sum(1 for t in recent_trades if t.buyer == self.charlie_name)
-        caesar_sell_pressure = sum(1 for t in recent_trades if t.seller == self.caesar_name)
-
-        buy_strength = charlie_buy_pressure - caesar_sell_pressure
-        sell_strength = caesar_sell_pressure - charlie_buy_pressure
-
+        mid_price = self.get_mid_price(state, self.symbol)
         order_depth = state.order_depths[self.symbol]
 
-        # Prise de position rapide
-        if buy_strength >= 3 and position <= 0:
-            self.buy(round(mid - 1), min(20, self.limit - position))
+        # DIRECTION: LONG (Charlie dominant)
+        if charlie_longs >= 3 and caesar_shorts <= 1:
+            if position < self.limit:
+                self.buy(round(mid_price - 1), min(20, self.limit - position))
 
-        elif sell_strength >= 3 and position >= 0:
-            self.sell(round(mid + 1), min(20, self.limit + position))
+        # DIRECTION: SHORT (Caesar dominant)
+        elif caesar_shorts >= 3 and charlie_longs <= 1:
+            if position > -self.limit:
+                self.sell(round(mid_price + 1), min(20, self.limit + position))
 
-        # Scalping rapide : on clôture vite après
-        elif position > 0:
-            self.sell(round(mid + 1), position)
-
-        elif position < 0:
-            self.buy(round(mid - 1), -position)
-
+        # REVERSION / FLAT
+        else:
+            if position > 0:
+                self.sell(round(mid_price), position)
+            elif position < 0:
+                self.buy(round(mid_price), -position)
 
 
 class KelpStrategy(MarketMakingStrategy):
@@ -1093,7 +1099,7 @@ class Trader:
             "KELP": KelpStrategy,
             "SQUID_INK": SquidinkJamsStrategy,
             "JAMS": SquidinkJamsStrategy,
-            "CROISSANTS": SymmetryScalperStrategy,  # ✅ nouvelle stratégie market making,
+            "CROISSANTS": SymmetryExploiterStrategy,  # ✅ nouvelle stratégie market making,
             #"DJEMBES": PicnicBasketStrategy,
             #"PICNIC_BASKET1": PicnicBasketStrategy,
             #"PICNIC_BASKET2": PicnicBasketStrategy,
