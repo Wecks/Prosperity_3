@@ -587,7 +587,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         fair = self.black_scholes(vr_price, self.strike_price, T, r, self.volatility)
         logger.print(f"Strike {self.strike_price} fair: {fair:.2f}, market: {voucher_pr:.2f}")
 
-        threshold = 0.01
+        threshold = 0.001
         if voucher_pr > fair * (1 + threshold):
             return Signal.SHORT
         if voucher_pr < fair * (1 - threshold):
