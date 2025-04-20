@@ -915,9 +915,9 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         if self.days_to_expiration <= 1:
             self.volatility = 0.7
         elif self.days_to_expiration == 2:
-            self.volatility = 0.4
+            self.volatility = 0.2
         elif self.days_to_expiration == 3:
-            self.volatility = 0.25
+            self.volatility = 0.2
         else:
             self.volatility = 0.2
 
