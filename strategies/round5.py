@@ -899,21 +899,33 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         # Set volatility parameter (may need tuning based on market behavior)
         # Sigma is set so that the Black-Scholes value matches the initial coupon price at day 1 timestamp 0
         # TODO: Check what value matches the initial coupon price at day 1 timestamp 0.
-        self.volatility = 0.2
+
 
         # Track days to expiration - starts at 7 days and decreases each round
         # 7 days is at beginning of round 1. At the end of round5 it will be 2 days left.
-        self.days_to_expiration = 7-3  # Starting value - 3 because we are at round 4.
+        self.days_to_expiration = 7-4  # Starting value - 3 because we are at round 4.
         self.last_timestamp = None
 
     def get_signal(self, state: TradingState) -> Signal | None:
         # Update days to expiration based on timestamp (one round = one day)
+        # Update days to expiration based on timestamp (1 round = 100 ticks)
         if self.last_timestamp is not None and state.timestamp > self.last_timestamp:
             timestamp_diff = (state.timestamp - self.last_timestamp) / 100
-            if timestamp_diff >= 1:  # If at least one round has passed
+            if timestamp_diff >= 1:
                 self.days_to_expiration -= int(timestamp_diff)
 
         self.last_timestamp = state.timestamp
+
+        # Ajustement dynamique de la volatilité en fonction du temps restant
+        if self.days_to_expiration <= 1:
+            self.volatility = 0.7  # Très proche de l’expiration
+        elif self.days_to_expiration == 2:
+            self.volatility = 0.7
+        elif self.days_to_expiration == 3:
+            self.volatility = 0.2  # Meilleure zone d’arbitrage
+        else:
+            self.volatility = 0.2  # Début, peu de mouvements
+
 
         # If expired or no market data, don't trade
         if self.days_to_expiration <= 0 or "VOLCANIC_ROCK" not in state.order_depths:
