@@ -926,7 +926,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         else:
             self.volatility = 0.2  # Début, peu de mouvements
 
-"""self.volatility = 0.2"""
+        """self.volatility = 0.2"""
 
         # If expired or no market data, don't trade
         if self.days_to_expiration <= 0 or "VOLCANIC_ROCK" not in state.order_depths:
