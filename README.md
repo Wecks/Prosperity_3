@@ -23,12 +23,9 @@ IMC-Prosperity/
 │   ├── manual/           # Some tables for manual trading decisions
 │   ├── old/              # Old strategies files
 │   ├── datamodel.py      # Data model classes provided by the competition
-│   ├── round4.py         # Current trading strategy with all asset types
-│   └── test_macarons.py  # Test implementation for Magnificent Macarons
+│   └── round5.py         # Current trading strategy with all asset types
 ├── logs/                 # Strategy execution logs and results
 ├── backtester/           # Backtesting and optimization tools
-│   ├── backtest.sh       # Helper script for running backtests
-│   ├── backtest_all.sh   # Helper script for backtesting across all rounds
 │   └── optimizers/       # Parameter optimization scripts
 └── templates/            # Template files provided by the competition
 ```
