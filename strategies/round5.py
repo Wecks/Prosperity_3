@@ -906,13 +906,13 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
     def update_volatility(self) -> None:
         """Ajuste dynamiquement la volatilité selon le temps restant avant expiration."""
         if self.days_to_expiration <= 1:
-            self.volatility = 0.2  # Très proche de l’expiration : volatilité élevée
+            self.volatility = 0.7  # Très proche de l’expiration : volatilité élevée
         elif self.days_to_expiration == 2:
-            self.volatility = 0.4
+            self.volatility = 0.3
         elif self.days_to_expiration == 3:
-            self.volatility = 0.7  # Zone optimale d'arbitrage
+            self.volatility = 0.2  # Zone optimale d'arbitrage
         else:
-            self.volatility = 0.7  # Début du round : volatilité plus faible
+            self.volatility = 0.2  # Début du round : volatilité plus faible
 
     def get_signal(self, state: TradingState) -> Signal | None:
         # Update days to expiration based on timestamp (1 round = 100 ticks)
