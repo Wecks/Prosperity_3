@@ -524,35 +524,22 @@ class SignalStrategy(Strategy):
         raise NotImplementedError()
 
     def act(self, state: TradingState) -> None:
-        # 1) calcul du nouveau signal
         new_signal = self.get_signal(state)
         if new_signal is not None:
-            # on passe LONG ou SHORT
             self.signal = new_signal
-        else:
-            # sinon on repasse NEUTRAL pour liquider
-            self.signal = Signal.NEUTRAL
 
-        # 2) infos pratiques
         position = state.position.get(self.symbol, 0)
         order_depth = state.order_depths[self.symbol]
 
-        # 3) SI on est NEUTRAL, on liquidera la position existante
         if self.signal == Signal.NEUTRAL:
             if position < 0:
-                # on rachète tout
                 self.buy(self.get_buy_price(order_depth), -position)
             elif position > 0:
-                # on vend tout
                 self.sell(self.get_sell_price(order_depth), position)
-
-        # 4) SINON, on agit comme avant en SHORT ou LONG
         elif self.signal == Signal.SHORT:
             self.sell(self.get_sell_price(order_depth), self.limit + position)
-
         elif self.signal == Signal.LONG:
             self.buy(self.get_buy_price(order_depth), self.limit - position)
-
 
     def get_buy_price(self, order_depth: OrderDepth) -> int:
         return min(order_depth.sell_orders.keys())
