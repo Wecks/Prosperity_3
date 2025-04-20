@@ -895,25 +895,38 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         super().__init__(symbol, limit)
         self.cdf = NormalDist().cdf
 
-        # Strike price (e.g., VOLCANIC_ROCK_VOUCHER_10000)
+        # Strike (ex: VOLCANIC_ROCK_VOUCHER_10000)
         self.strike_price = float(symbol.split('_')[-1])
 
-        # Init fallback volatility (will be overwritten dynamically)
-        self.volatility = 0.2
-        self.rock_prices = deque(maxlen=20)
-
-        self.days_to_expiration = 7 - 4  # adapt to round if needed
+        self.rock_prices = deque(maxlen=30)  # historique des prix
+        self.volatility = 0.2  # fallback initial
+        self.days_to_expiration = 7 - 4  # adapte ici selon le round
         self.last_timestamp = None
 
+    def update_volatility(self):
+        if len(self.rock_prices) < 2:
+            return
+
+        returns = [
+            math.log(self.rock_prices[i+1] / self.rock_prices[i])
+            for i in range(len(self.rock_prices) - 1)
+        ]
+
+        daily_vol = statistics.stdev(returns)
+        self.volatility = daily_vol * math.sqrt(365)
+
     def get_signal(self, state: TradingState) -> Signal | None:
-        # Update days to expiration
+        # Mise à jour du temps jusqu'à expiration
         if self.last_timestamp is not None and state.timestamp > self.last_timestamp:
             timestamp_diff = (state.timestamp - self.last_timestamp) / 100
             if timestamp_diff >= 1:
                 self.days_to_expiration -= int(timestamp_diff)
         self.last_timestamp = state.timestamp
 
-        # ⬇️ Append current price to price history for vol calc
+        if self.days_to_expiration <= 0:
+            return
+
+        # Vérifie qu'on a les données nécessaires
         if "VOLCANIC_ROCK" not in state.order_depths:
             return
         underlying_price = self.get_mid_price(state, "VOLCANIC_ROCK")
@@ -921,21 +934,9 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
             return
         self.rock_prices.append(underlying_price)
 
-        # ✅ Calculate dynamic volatility if enough data
-        if len(self.rock_prices) >= 10:
-            returns = [
-                math.log(self.rock_prices[i+1] / self.rock_prices[i])
-                for i in range(len(self.rock_prices) - 1)
-            ]
-            std_dev = statistics.stdev(returns)
-            self.volatility = std_dev * math.sqrt(365)  # annualized
-            # logger.print(f"[{self.symbol}] Volatility updated to {self.volatility:.4f}")
+        # 🔄 Met à jour la volatilité dynamique
+        self.update_volatility()
 
-        # Stop if expired
-        if self.days_to_expiration <= 0:
-            return
-
-        # Check for data availability
         if self.symbol not in state.order_depths or \
            len(state.order_depths[self.symbol].buy_orders) == 0 or \
            len(state.order_depths[self.symbol].sell_orders) == 0:
@@ -945,9 +946,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
            len(state.order_depths["VOLCANIC_ROCK"].sell_orders) == 0:
             return
 
-        # Current prices
         voucher_price = self.get_mid_price(state, self.symbol)
-
         expiration_time = self.days_to_expiration / 365
         risk_free_rate = 0
 
@@ -959,7 +958,8 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
             self.volatility
         )
 
-        threshold = 0.02
+        threshold = 0.02  # tuning possible
+
         if voucher_price > expected_price + threshold:
             return Signal.SHORT
         elif voucher_price < expected_price - threshold:
@@ -973,10 +973,11 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
         risk_free_rate: float,
         volatility: float,
     ) -> float:
-        d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility ** 2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
+        if expiration_time == 0 or volatility == 0:
+            return max(asset_price - strike_price, 0)
+        d1 = (math.log(asset_price / strike_price) + (risk_free_rate + volatility**2 / 2) * expiration_time) / (volatility * math.sqrt(expiration_time))
         d2 = d1 - volatility * math.sqrt(expiration_time)
         return asset_price * self.cdf(d1) - strike_price * math.exp(-risk_free_rate * expiration_time) * self.cdf(d2)
-
 
 class MagnificentMacaronsStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
