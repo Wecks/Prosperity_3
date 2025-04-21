@@ -136,8 +136,8 @@ PARAMS = {
         "dec_edge_discount": 0.8,
         "step_size": 0.5,
         # CSI settings
-        "CSI": 0.42,
-        "sunlight_window": 5,
+        "CSI": 0.7,
+        "sunlight_window": 2,
         # Panic multipliers
         "panic_edge_mult": 3.0,
         "panic_size_mult": 2.0,
