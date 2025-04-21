@@ -743,6 +743,78 @@ class MagnificentMacaronsStrategy(Strategy):
                     self.sell(market_price, sell_qty)
                 return
 
+class VolcanicRockStrategy(Strategy):
+    """Mean‑reversion VWAP vs mid‑price pour VOLCANIC_ROCK."""
+    def act(self, state: TradingState) -> None:
+        od = state.order_depths.get("VOLCANIC_ROCK")
+        if not od or not od.buy_orders or not od.sell_orders:
+            return
+        best_bid, best_ask = max(od.buy_orders), min(od.sell_orders)
+        mid = (best_bid + best_ask) / 2
+
+        # VWAP
+        total_val = sum(p * v for p,v in od.buy_orders.items()) + sum(p * abs(v) for p,v in od.sell_orders.items())
+        total_vol = sum(od.buy_orders.values()) + sum(abs(v) for v in od.sell_orders.values())
+        vwap = total_val / total_vol if total_vol else mid
+
+        pos = state.position.get("VOLCANIC_ROCK", 0)
+        max_p, min_p = 20, -20
+        dev = (mid - vwap) / vwap if vwap else 0
+        entry_thr, exit_thr = 0.002, 0.001
+        base_qty = 5
+
+        # entrée
+        if dev > entry_thr and pos < max_p:
+            self.sell(best_ask, min(base_qty, max_p - pos))
+        elif dev < -entry_thr and pos > min_p:
+            self.buy(best_bid, min(base_qty, pos - min_p))
+
+        # sortie
+        if pos > 0 and dev > exit_thr:
+            self.sell(best_ask, pos)
+        elif pos < 0 and dev < -exit_thr:
+            self.buy(best_bid, -pos)
+
+class VolcanicRockVoucher10000Strategy(Strategy):
+    """Trading IV‑driven pour VOLCANIC_ROCK_VOUCHER_10000."""
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+        self.strike = 10000
+        self.iv_history: deque[float] = deque(maxlen=10)
+
+    def act(self, state: TradingState) -> None:
+        od_v = state.order_depths.get(self.symbol)
+        od_u = state.order_depths.get("VOLCANIC_ROCK")
+        if not od_v or not od_u or not od_v.buy_orders or not od_v.sell_orders:
+            return
+
+        # mid prix sous-jacent
+        bb_u, ba_u = max(od_u.buy_orders), min(od_u.sell_orders)
+        spot = (bb_u + ba_u) / 2
+        # mid prix voucher
+        bb_v, ba_v = max(od_v.buy_orders), min(od_v.sell_orders)
+        price = (bb_v + ba_v) / 2
+
+        # T en années : ~3 jours de trading
+        T = 3/252
+        iv = BlackScholes.implied_volatility(price, spot, self.strike, T)
+        prev_iv = sum(self.iv_history)/len(self.iv_history) if self.iv_history else iv
+        self.iv_history.append(iv)
+
+        pos = state.position.get(self.symbol, 0)
+        thr = 0.002
+
+        # vendre si IV en hausse
+        if iv > prev_iv + thr and pos > -self.limit:
+            qty = min(self.limit + pos, od_v.buy_orders[bb_v])
+            if qty>0: self.sell(bb_v, qty)
+
+        # acheter si IV en baisse
+        elif iv < prev_iv - thr and pos < self.limit:
+            qty = min(self.limit - pos, abs(od_v.sell_orders[ba_v]))
+            if qty>0: self.buy(ba_v, qty)
+
+
 class Trader:
     def __init__(self) -> None:
         limits = {
@@ -764,6 +836,7 @@ class Trader:
         }
 
         self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
+            "VOLCANIC_ROCK": VolcanicRockStrategy,
             "RAINFOREST_RESIN": RainforestStrategy,
             "KELP": KelpStrategy,
             "SQUID_INK": SquidinkJamsStrategy,
@@ -774,7 +847,7 @@ class Trader:
             "PICNIC_BASKET2": GiftBasketStrategy,
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
-            "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
+            "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucher10000Strategy,
             "VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy,
             "MAGNIFICENT_MACARONS":MagnificentMacaronsStrategy
