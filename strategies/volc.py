@@ -185,7 +185,7 @@ class Status:
         self.ma_window = 10  # For the moving average of implied vol
         self.alpha = 0.3
         self.volatility = 0.16
-        self.initial_time_to_expiry = 7  # 4 trading days remaining at Round 4 (day 4)
+        self.initial_time_to_expiry = 3  # 4 trading days remaining at Round 4 (day 4)
         self.strike = strike
         self.price_history = []  # Track price history for trend analysis
         self.volatility_history = []  # Track volatility history
