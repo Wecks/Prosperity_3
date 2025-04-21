@@ -622,7 +622,7 @@ class Trade:
         orders = []
 
         # dont trade all strikes 
-        if strike not in [9500]:
+        if strike not in [9750]:
             return orders
 
         # Update price and volatility history
@@ -721,7 +721,7 @@ class Trader:
             underlying = Status(Product.VOLCANIC_ROCK, state)
 
             # voucher for 10000
-            for strike in (0, 9500):
+            for strike in (0, 9750):
                 key = f"{Product.VOLCANIC_ROCK}_VOUCHER_{strike}"
                 if key in state.order_depths:
                     st = Status(key, state, strike)
