@@ -702,7 +702,7 @@ class MagnificentMacaronsStrategy(Strategy):
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
         # record recent sunlight readings
-        self.sun_history: deque[float] = deque(maxlen=1000)
+        self.sun_history: deque[float] = deque(maxlen=500)
         # static base CSI chosen from backtest
         self.base_csi: float = 55.5
         self.threshold: float = 3
