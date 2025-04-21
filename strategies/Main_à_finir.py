@@ -747,8 +747,8 @@ class MagnificentMacaronsStrategy(Strategy):
                 return
 
 class VolcanicRockStrategy(Strategy):
-    VOLCANIC_SMA_WINDOW = 10 #50
-    VOLCANIC_THRESHOLD = 3 # 5
+    VOLCANIC_SMA_WINDOW = 50 #50
+    VOLCANIC_THRESHOLD = 2 # 5
     VOLCANIC_ORDER_SIZE = 10 # 10
     VOLCANIC_STOP_LOSS_THRESHOLD = 10000000  # effectively disables stop-loss
     PRICE_HISTORY_MAXLEN = VOLCANIC_SMA_WINDOW + 10
