@@ -215,7 +215,7 @@ class Trader:
         for p in sorted(od.buy_orders, reverse=True):
             if p <= ia + edge:
                 break
-            q = min(max(abs(od.buy_orders[p]), MIN_VOL), sell_cap)
+            q = min(abs(od.buy_orders[p]), sell_cap)
             if q > 0:
                 orders.append(Order(prod, round(p), -q))
                 sell_v += q
@@ -239,8 +239,8 @@ class Trader:
             bid -= edge * (self.params[prod]["panic_edge_mult"] - 1)
             ask += edge * (self.params[prod]["panic_edge_mult"] - 1)
         size_mult = self.params[prod]["panic_size_mult"] if panic else 1.0
-        bq = int(self.LIMIT[prod] * size_mult)
-        sq = int(self.LIMIT[prod] * size_mult)
+        bq = int((self.LIMIT[prod] - (position + buy_v)) * size_mult)
+        sq = int((self.LIMIT[prod] + (position - sell_v)) * size_mult)
         if bq > 0:
             orders.append(Order(prod, round(bid), bq))
         if sq > 0:
