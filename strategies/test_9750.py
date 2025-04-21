@@ -644,7 +644,7 @@ class Trade:
         profit_trend = state.get_recent_profit_trend()
 
         # Base parameters
-        base_threshold = 0.001
+        base_threshold = 0.002
         max_position = 200
 
         # Adjust threshold based on volatility trend
