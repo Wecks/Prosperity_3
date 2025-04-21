@@ -126,18 +126,18 @@ class Product:
 # Enhanced parameters for larger swings
 PARAMS = {
     Product.MAGNIFICENT_MACARONS: {
-        "make_edge": 1,
-        "make_min_edge": 0.5,
+        "make_edge": 2,
+        "make_min_edge": 1,
         "make_probability": 0.566,
-        "init_make_edge": 1,
-        "min_edge": 0.3,
-        "volume_avg_timestamp": 2,
-        "volume_bar": 10,
+        "init_make_edge": 2,
+        "min_edge": 0.6,
+        "volume_avg_timestamp": 5,
+        "volume_bar": 75,
         "dec_edge_discount": 0.8,
         "step_size": 0.5,
         # CSI settings
-        "CSI": 0.7,
-        "sunlight_window": 2,
+        "CSI": 0.42,
+        "sunlight_window": 5,
         # Panic multipliers
         "panic_edge_mult": 3.0,
         "panic_size_mult": 2.0,
@@ -215,7 +215,7 @@ class Trader:
         for p in sorted(od.buy_orders, reverse=True):
             if p <= ia + edge:
                 break
-            q = min(abs(od.buy_orders[p]), sell_cap)
+            q = min(max(abs(od.buy_orders[p]), MIN_VOL), sell_cap)
             if q > 0:
                 orders.append(Order(prod, round(p), -q))
                 sell_v += q
@@ -239,8 +239,8 @@ class Trader:
             bid -= edge * (self.params[prod]["panic_edge_mult"] - 1)
             ask += edge * (self.params[prod]["panic_edge_mult"] - 1)
         size_mult = self.params[prod]["panic_size_mult"] if panic else 1.0
-        bq = int((self.LIMIT[prod] - (position + buy_v)) * size_mult)
-        sq = int((self.LIMIT[prod] + (position - sell_v)) * size_mult)
+        bq = int(self.LIMIT[prod] * size_mult)
+        sq = int(self.LIMIT[prod] * size_mult)
         if bq > 0:
             orders.append(Order(prod, round(bid), bq))
         if sq > 0:
