@@ -131,8 +131,8 @@ PARAMS = {
         "make_probability": 0.566,
         "init_make_edge": 1,
         "min_edge": 0.3,
-        "volume_avg_timestamp": 5,
-        "volume_bar": 75,
+        "volume_avg_timestamp": 2,
+        "volume_bar": 10,
         "dec_edge_discount": 0.8,
         "step_size": 0.5,
         # CSI settings
