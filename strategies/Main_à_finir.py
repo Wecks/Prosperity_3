@@ -745,6 +745,10 @@ class MagnificentMacaronsStrategy(Strategy):
                     self.sell(market_price, sell_qty)
                 return
 
+class Product:
+    VOLCANIC_ROCK = "VOLCANIC_ROCK"
+    VOLCANIC_ROCK_VOUCHER_10000 = "VOLCANIC_ROCK_VOUCHER_10000"
+
 class BlackScholes:
     @staticmethod
     def black_scholes_call(spot, strike, tte, vol):
