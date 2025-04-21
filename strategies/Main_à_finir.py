@@ -836,7 +836,7 @@ class Trade:
         if st.prod not in st.state.order_depths: 
             return orders
 
-        st.update_hist(); underlying.update_hist()
+        st.update_hist()
         current_iv = st.iv_hist[-1]
         prev_iv = sum(st.iv_hist)/len(st.iv_hist)
         # seuil de trading
