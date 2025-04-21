@@ -529,8 +529,8 @@ class IV_history:
     def set_IV_history(self, product: str, IV_history: List[float]) -> None:
         if product == "VOLCANIC_ROCK_VOUCHER_9500":
             self.v_9500_IV_history = IV_history
-        elif product == "VOLCANIC_ROCK_VOUCHER_9750":
-            self.v_9750_IV_history = IV_history
+        elif product == "VOLCANIC_ROCK_VOUCHER_9500":
+            self.v_9500_IV_history = IV_history
         elif product == "VOLCANIC_ROCK_VOUCHER_10000":
             self.v_10000_IV_history = IV_history
         elif product == "VOLCANIC_ROCK_VOUCHER_10250":
@@ -622,7 +622,7 @@ class Trade:
         orders = []
 
         # dont trade all strikes 
-        if strike not in [9750]:
+        if strike not in [9500]:
             return orders
 
         # Update price and volatility history
@@ -721,7 +721,7 @@ class Trader:
             underlying = Status(Product.VOLCANIC_ROCK, state)
 
             # voucher for 10000
-            for strike in (0, 9750):
+            for strike in (0, 9500):
                 key = f"{Product.VOLCANIC_ROCK}_VOUCHER_{strike}"
                 if key in state.order_depths:
                     st = Status(key, state, strike)
