@@ -158,6 +158,32 @@ class Strategy:
     def load(self, data: JSON) -> None:
         pass
 
+class BlackScholes:
+    @staticmethod
+    def black_scholes_call(spot, strike, time_to_expiry, volatility):
+        d1 = (
+            (log(spot/strike)) + (0.5 * volatility * volatility) * time_to_expiry
+        ) / (volatility * sqrt(time_to_expiry))
+        d2 = d1 - volatility * sqrt(time_to_expiry)
+        return spot * NormalDist().cdf(d1) - strike * NormalDist().cdf(d2)
+
+    @staticmethod
+    def implied_volatility(call_price, spot, strike, time_to_expiry,
+                           max_iterations=200, tolerance=1e-15):
+        low_vol, high_vol = 0.01, 1.0
+        vol = (low_vol + high_vol) / 2.0
+        for _ in range(max_iterations):
+            est = BlackScholes.black_scholes_call(spot, strike, time_to_expiry, vol)
+            diff = est - call_price
+            if abs(diff) < tolerance:
+                break
+            if diff > 0:
+                high_vol = vol
+            else:
+                low_vol = vol
+            vol = (low_vol + high_vol) / 2.0
+        return vol
+
 class Signal(IntEnum):
     NEUTRAL = 0
     SHORT = 1
