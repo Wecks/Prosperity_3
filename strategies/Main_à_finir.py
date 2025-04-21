@@ -758,8 +758,8 @@ class Trader:
             "VOLCANIC_ROCK_VOUCHER_9500": 200, #Expiration 7 days (=round) for all voucher,
             "VOLCANIC_ROCK_VOUCHER_9750": 200,
             "VOLCANIC_ROCK_VOUCHER_10000": 200,
-            "VOLCANIC_ROCK_VOUCHER_10250": 200,
-            "VOLCANIC_ROCK_VOUCHER_10500": 200,
+            "VOLCANIC_ROCK_VOUCHER_10250": 0,
+            "VOLCANIC_ROCK_VOUCHER_10500": 0,
             "MAGNIFICENT_MACARONS": 75,
         }
 
@@ -775,8 +775,8 @@ class Trader:
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
-            #"VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy, A peaufiner avant de remettre
-            #"VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy, A peaufiner avant de remettre
+            "VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy,
+            "VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy,
             "MAGNIFICENT_MACARONS":MagnificentMacaronsStrategy
         }.items()}
 
