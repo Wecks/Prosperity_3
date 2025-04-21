@@ -6,8 +6,6 @@ from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder
 from enum import IntEnum
 from statistics import NormalDist
 from typing import Any, TypeAlias, Deque
-from typing import Any, TypeAlias, Deque, List
-
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 
@@ -484,62 +482,76 @@ class PicnicBasketStrategy(SignalStrategy):
 
          return None
 
-class GiftBasketStrategy(Strategy):
+class GiftBasketStrategy:
     def __init__(self, symbol: str, limit: int) -> None:
-        super().__init__(symbol, limit)
+        self.symbol = symbol
+        self.limit = limit
         self.orders: List[Order] = []
 
     def act(self, state: TradingState) -> None:
-        required = ["JAMS", "CROISSANTS", "DJEMBES", "PICNIC_BASKET1", "PICNIC_BASKET2"]
-        if any(sym not in state.order_depths for sym in required):
+        required_symbols = ["JAMS", "CROISSANTS", "DJEMBES", "PICNIC_BASKET1", "PICNIC_BASKET2"]
+        if any(symbol not in state.order_depths for symbol in required_symbols):
             return
 
-        # prix mid de chaque composant
-        jams = self.get_mid_price(state, "JAMS")
-        croissants = self.get_mid_price(state, "CROISSANTS")
-        djembes = self.get_mid_price(state, "DJEMBES")
-        basket1 = self.get_mid_price(state, "PICNIC_BASKET1")
-        basket2 = self.get_mid_price(state, "PICNIC_BASKET2")
+        chocolate = self.get_mid_price(state, "JAMS")
+        strawberries = self.get_mid_price(state, "CROISSANTS")
+        roses = self.get_mid_price(state, "DJEMBES")
+        gift_basket1 = self.get_mid_price(state, "PICNIC_BASKET1")
+        gift_basket2 = self.get_mid_price(state, "PICNIC_BASKET2")
 
-        # diff selon le symbole
         if self.symbol == "PICNIC_BASKET2":
-            diff = basket2 - 4 * croissants - 2 * jams
+            diff = gift_basket2 - 4 * strawberries - 2 * chocolate
         else:
-            diff = basket1 - 4 * jams - 6 * croissants - djembes
+            diff = gift_basket1 - 4 * chocolate - 6 * strawberries - roses
 
-        long_thr, short_thr = {
-            "JAMS":            (230, 355),
-            "CROISSANTS":      (195, 485),
-            "DJEMBES":         (325, 370),
-            "PICNIC_BASKET1":  (290, 355),
-            "PICNIC_BASKET2":  (50,  100),
+        long_threshold, short_threshold = {
+            "JAMS": (230, 355),
+            "CROISSANTS": (195, 485),
+            "DJEMBES": (325, 370),
+            "PICNIC_BASKET1": (290, 355),
+            "PICNIC_BASKET2": (50, 100),
         }[self.symbol]
 
-        if diff < long_thr:
+        if diff < long_threshold:
             self.go_long(state)
-        elif diff > short_thr:
+        elif diff > short_threshold:
             self.go_short(state)
 
+    def get_mid_price(self, state: TradingState, symbol: str) -> float:
+        order_depth = state.order_depths.get(symbol)
+        if not order_depth or not order_depth.buy_orders or not order_depth.sell_orders:
+            return 0.0
+        buy_orders = sorted(order_depth.buy_orders.items(), reverse=True)
+        sell_orders = sorted(order_depth.sell_orders.items())
+        popular_buy_price = max(buy_orders, key=lambda tup: tup[1])[0]
+        popular_sell_price = min(sell_orders, key=lambda tup: tup[1])[0]
+        return (popular_buy_price + popular_sell_price) / 2
+
+    def buy(self, price: int, quantity: int) -> None:
+        self.orders.append(Order(self.symbol, price, quantity))
+
+    def sell(self, price: int, quantity: int) -> None:
+        self.orders.append(Order(self.symbol, price, -quantity))
+
     def go_long(self, state: TradingState) -> None:
-        od = state.order_depths[self.symbol]
-        if not od.sell_orders:
+        order_depth = state.order_depths[self.symbol]
+        if not order_depth.sell_orders:
             return
-        price = min(od.sell_orders.keys())
-        pos = state.position.get(self.symbol, 0)
-        qty = self.limit - pos
-        if qty > 0:
-            self.buy(price, qty)
+        price = min(order_depth.sell_orders.keys())
+        position = state.position.get(self.symbol, 0)
+        to_buy = self.limit - position
+        if to_buy > 0:
+            self.buy(price, to_buy)
 
     def go_short(self, state: TradingState) -> None:
-        od = state.order_depths[self.symbol]
-        if not od.buy_orders:
+        order_depth = state.order_depths[self.symbol]
+        if not order_depth.buy_orders:
             return
-        price = max(od.buy_orders.keys())
-        pos = state.position.get(self.symbol, 0)
-        qty = self.limit + pos
-        if qty > 0:
-            self.sell(price, qty)
-
+        price = max(order_depth.buy_orders.keys())
+        position = state.position.get(self.symbol, 0)
+        to_sell = self.limit + position
+        if to_sell > 0:
+            self.sell(price, to_sell)
 
 class VolatilityManager:
     """Singleton class that manages volatility across all voucher strikes."""
@@ -744,60 +756,59 @@ class MagnificentMacaronsStrategy(Strategy):
 class Trader:
     def __init__(self) -> None:
         limits = {
-            "RAINFOREST_RESIN":           50,
-            "KELP":                       50,
-            "SQUID_INK":                  50,
-            "JAMS":                      350,
-            "CROISSANTS":                250,
-            "DJEMBES":                    60,
-            "PICNIC_BASKET1":             60,
-            "PICNIC_BASKET2":            100,
-            "VOLCANIC_ROCK":             400,
-            "VOLCANIC_ROCK_VOUCHER_9500":200,
-            "VOLCANIC_ROCK_VOUCHER_9750":200,
-            "VOLCANIC_ROCK_VOUCHER_10000":200,
-            "VOLCANIC_ROCK_VOUCHER_10250":200,
-            "VOLCANIC_ROCK_VOUCHER_10500":200,
-            "MAGNIFICENT_MACARONS":       75,
+            "RAINFOREST_RESIN": 50,
+            "KELP": 50,
+            "SQUID_INK": 50,
+            "JAMS": 350,
+            "CROISSANTS": 250,
+            "DJEMBES": 60,
+            "PICNIC_BASKET1": 60,
+            "PICNIC_BASKET2": 100,
+            "VOLCANIC_ROCK": 400,
+            "VOLCANIC_ROCK_VOUCHER_9500": 200, #Expiration 7 days (=round) for all voucher,
+            "VOLCANIC_ROCK_VOUCHER_9750": 200,
+            "VOLCANIC_ROCK_VOUCHER_10000": 200,
+            "VOLCANIC_ROCK_VOUCHER_10250": 200,
+            "VOLCANIC_ROCK_VOUCHER_10500": 200,
+            "MAGNIFICENT_MACARONS": 75,
         }
 
-        # On sélectionne classe par symbole : PicnicBasketStrategy pour PB1, GiftBasketStrategy pour PB2
-        self.strategies: dict[Symbol, Strategy] = {
-            "RAINFOREST_RESIN":          RainforestStrategy("RAINFOREST_RESIN", limits["RAINFOREST_RESIN"]),
-            "KELP":                      KelpStrategy("KELP", limits["KELP"]),
-            "SQUID_INK":                 SquidinkJamsStrategy("SQUID_INK", limits["SQUID_INK"]),
-            "JAMS":                      SquidinkJamsStrategy("JAMS", limits["JAMS"]),
-            "CROISSANTS":                PicnicBasketStrategy("CROISSANTS", limits["CROISSANTS"]),
-            "DJEMBES":                   PicnicBasketStrategy("DJEMBES", limits["DJEMBES"]),
-            "PICNIC_BASKET1":            PicnicBasketStrategy("PICNIC_BASKET1", limits["PICNIC_BASKET1"]),
-            "PICNIC_BASKET2":            GiftBasketStrategy("PICNIC_BASKET2",    limits["PICNIC_BASKET2"]),
-            "VOLCANIC_ROCK":             VolcanicRockVoucherStrategy("VOLCANIC_ROCK", limits["VOLCANIC_ROCK"]),
-            "VOLCANIC_ROCK_VOUCHER_9500":VolcanicRockVoucherStrategy("VOLCANIC_ROCK_VOUCHER_9500", limits["VOLCANIC_ROCK_VOUCHER_9500"]),
-            "VOLCANIC_ROCK_VOUCHER_9750":VolcanicRockVoucherStrategy("VOLCANIC_ROCK_VOUCHER_9750", limits["VOLCANIC_ROCK_VOUCHER_9750"]),
-            "VOLCANIC_ROCK_VOUCHER_10000":VolcanicRockVoucherStrategy("VOLCANIC_ROCK_VOUCHER_10000", limits["VOLCANIC_ROCK_VOUCHER_10000"]),
-            "VOLCANIC_ROCK_VOUCHER_10250":VolcanicRockVoucherStrategy("VOLCANIC_ROCK_VOUCHER_10250", limits["VOLCANIC_ROCK_VOUCHER_10250"]),
-            "VOLCANIC_ROCK_VOUCHER_10500":VolcanicRockVoucherStrategy("VOLCANIC_ROCK_VOUCHER_10500", limits["VOLCANIC_ROCK_VOUCHER_10500"]),
-            "MAGNIFICENT_MACARONS":      MagnificentMacaronsStrategy("MAGNIFICENT_MACARONS", limits["MAGNIFICENT_MACARONS"]),
-        }
+        self.strategies: dict[Symbol, Strategy] = {symbol: clazz(symbol, limits[symbol]) for symbol, clazz in {
+            "RAINFOREST_RESIN": RainforestStrategy,
+            "KELP": KelpStrategy,
+            "SQUID_INK": SquidinkJamsStrategy,
+            "JAMS": SquidinkJamsStrategy,
+            "CROISSANTS": PicnicBasketStrategy,
+            "DJEMBES": PicnicBasketStrategy,
+            "PICNIC_BASKET1": PicnicBasketStrategy,
+            "PICNIC_BASKET2": PicnicBasketStrategy,
+            "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
+            "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
+            "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
+            "VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy,
+            "VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy,
+            "MAGNIFICENT_MACARONS":MagnificentMacaronsStrategy
+        }.items()}
 
     def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:
         orders = {}
         conversions = 0
 
-        old_data = json.loads(state.traderData) if state.traderData else {}
-        new_data: dict[str, Any] = {}
+        old_trader_data = json.loads(state.traderData) if state.traderData != "" else {}
+        new_trader_data = {}
 
-        for symbol, strat in self.strategies.items():
-            if symbol in old_data:
-                strat.load(old_data[symbol])
+        for symbol, strategy in self.strategies.items():
+            if symbol in old_trader_data:
+                strategy.load(old_trader_data[symbol])
 
-            if symbol in state.order_depths and state.order_depths[symbol].buy_orders and state.order_depths[symbol].sell_orders:
-                strat_orders, strat_conversions = strat.run(state)
-                orders[symbol] = strat_orders
-                conversions += strat_conversions
+            if symbol in state.order_depths and len(state.order_depths[symbol].buy_orders) > 0 and len(state.order_depths[symbol].sell_orders) > 0:
+                strategy_orders, strategy_conversions = strategy.run(state)
+                orders[symbol] = strategy_orders
+                conversions += strategy_conversions
 
-            new_data[symbol] = strat.save()
+            new_trader_data[symbol] = strategy.save()
 
-        trader_data = json.dumps(new_data, separators=(",", ":"))
+        trader_data = json.dumps(new_trader_data, separators=(",", ":"))
+
         logger.flush(state, orders, conversions, trader_data)
         return orders, conversions, trader_data
