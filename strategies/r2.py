@@ -1,4 +1,12 @@
-class GiftBasketStrategy(Strategy):
+from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder, Symbol, Trade, TradingState
+from typing import Dict, List
+
+class GiftBasketStrategy:
+    def __init__(self, symbol: str, limit: int) -> None:
+        self.symbol = symbol
+        self.limit = limit
+        self.orders: List[Order] = []
+
     def act(self, state: TradingState) -> None:
         required_symbols = ["JAMS", "CROISSANTS", "DJEMBES", "PICNIC_BASKET1", "PICNIC_BASKET2"]
         if any(symbol not in state.order_depths for symbol in required_symbols):
@@ -38,11 +46,17 @@ class GiftBasketStrategy(Strategy):
         popular_sell_price = min(sell_orders, key=lambda tup: tup[1])[0]
         return (popular_buy_price + popular_sell_price) / 2
 
+    def buy(self, price: int, quantity: int) -> None:
+        self.orders.append(Order(self.symbol, price, quantity))
+
+    def sell(self, price: int, quantity: int) -> None:
+        self.orders.append(Order(self.symbol, price, -quantity))
+
     def go_long(self, state: TradingState) -> None:
         order_depth = state.order_depths[self.symbol]
         if not order_depth.sell_orders:
             return
-        price = max(order_depth.sell_orders.keys())
+        price = min(order_depth.sell_orders.keys())
         position = state.position.get(self.symbol, 0)
         to_buy = self.limit - position
         if to_buy > 0:
@@ -52,8 +66,26 @@ class GiftBasketStrategy(Strategy):
         order_depth = state.order_depths[self.symbol]
         if not order_depth.buy_orders:
             return
-        price = min(order_depth.buy_orders.keys())
+        price = max(order_depth.buy_orders.keys())
         position = state.position.get(self.symbol, 0)
         to_sell = self.limit + position
         if to_sell > 0:
             self.sell(price, to_sell)
+
+class Trader:
+    def __init__(self) -> None:
+        self.strategies: Dict[str, GiftBasketStrategy] = {
+            "JAMS": GiftBasketStrategy("JAMS", 350),
+            "CROISSANTS": GiftBasketStrategy("CROISSANTS", 250),
+            "DJEMBES": GiftBasketStrategy("DJEMBES", 60),
+            "PICNIC_BASKET1": GiftBasketStrategy("PICNIC_BASKET1", 60),
+            "PICNIC_BASKET2": GiftBasketStrategy("PICNIC_BASKET2", 100),
+        }
+
+    def run(self, state: TradingState) -> tuple[Dict[str, List[Order]], int, str]:
+        orders = {}
+        for symbol, strategy in self.strategies.items():
+            strategy.orders = []
+            strategy.act(state)
+            orders[symbol] = strategy.orders
+        return orders, 0, ""
