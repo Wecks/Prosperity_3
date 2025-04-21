@@ -6,6 +6,8 @@ from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder
 from enum import IntEnum
 from statistics import NormalDist
 from typing import Any, TypeAlias, Deque
+from math import log, sqrt
+
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 
@@ -744,36 +746,103 @@ class MagnificentMacaronsStrategy(Strategy):
                 return
 
 class VolcanicRockStrategy(Strategy):
-    """Mean‑reversion VWAP vs mid‑price pour VOLCANIC_ROCK."""
+    VOLCANIC_SMA_WINDOW = 50
+    VOLCANIC_THRESHOLD = 5
+    VOLCANIC_ORDER_SIZE = 10
+    VOLCANIC_STOP_LOSS_THRESHOLD = 10000000  # effectively disables stop-loss
+    PRICE_HISTORY_MAXLEN = VOLCANIC_SMA_WINDOW + 10
+
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+        self.price_history: Deque[float] = deque(maxlen=self.PRICE_HISTORY_MAXLEN)
+
     def act(self, state: TradingState) -> None:
-        od = state.order_depths.get("VOLCANIC_ROCK")
-        if not od or not od.buy_orders or not od.sell_orders:
+        od = state.order_depths.get(self.symbol)
+        if not od:
+            logger.print("VOLCANIC_ROCK not found")
             return
-        best_bid, best_ask = max(od.buy_orders), min(od.sell_orders)
-        mid = (best_bid + best_ask) / 2
 
-        # VWAP
-        total_val = sum(p * v for p,v in od.buy_orders.items()) + sum(p * abs(v) for p,v in od.sell_orders.items())
-        total_vol = sum(od.buy_orders.values()) + sum(abs(v) for v in od.sell_orders.values())
-        vwap = total_val / total_vol if total_vol else mid
+        ts = state.timestamp
+        logger.print(f"\n--- Volcanic Rock @ {ts} ---")
 
-        pos = state.position.get("VOLCANIC_ROCK", 0)
-        max_p, min_p = 20, -20
-        dev = (mid - vwap) / vwap if vwap else 0
-        entry_thr, exit_thr = 0.002, 0.001
-        base_qty = 5
+        price = self.get_micro_price(od) or self.get_estimate_price(od)
+        if price is None:
+            logger.print("No price available for Volcanic Rock; skipping.")
+            return
 
-        # entrée
-        if dev > entry_thr and pos < max_p:
-            self.sell(best_ask, min(base_qty, max_p - pos))
-        elif dev < -entry_thr and pos > min_p:
-            self.buy(best_bid, min(base_qty, pos - min_p))
+        logger.print(f"Price: {price:.2f}")
+        self.price_history.append(price)
 
-        # sortie
-        if pos > 0 and dev > exit_thr:
-            self.sell(best_ask, pos)
-        elif pos < 0 and dev < -exit_thr:
-            self.buy(best_bid, -pos)
+        if len(self.price_history) < self.VOLCANIC_SMA_WINDOW:
+            return  # Not enough data yet
+
+        sma = sum(list(self.price_history)[-self.VOLCANIC_SMA_WINDOW:]) / self.VOLCANIC_SMA_WINDOW
+        pos = state.position.get(self.symbol, 0)
+        best_bid = max(od.buy_orders.keys()) if od.buy_orders else None
+        best_ask = min(od.sell_orders.keys()) if od.sell_orders else None
+        logger.print(f"SMA({self.VOLCANIC_SMA_WINDOW}): {sma:.2f}, Pos={pos}")
+
+        target = pos
+        stop = False
+
+        if pos > 0 and price < sma - self.VOLCANIC_STOP_LOSS_THRESHOLD:
+            logger.print("*** STOP‑LOSS LONG ***")
+            target, stop = 0, True
+        elif pos < 0 and price > sma + self.VOLCANIC_STOP_LOSS_THRESHOLD:
+            logger.print("*** STOP‑LOSS SHORT ***")
+            target, stop = 0, True
+
+        if not stop:
+            if price < sma - self.VOLCANIC_THRESHOLD:
+                logger.print("→ SIGNAL LONG")
+                target = +self.limit
+            elif price > sma + self.VOLCANIC_THRESHOLD:
+                logger.print("→ SIGNAL SHORT")
+                target = -self.limit
+            else:
+                logger.print("→ HOLD")
+
+        delta = target - pos
+        if delta > 0 and best_ask is not None:
+            qty = min(delta, self.VOLCANIC_ORDER_SIZE, self.limit - pos)
+            if qty > 0:
+                logger.print(f"BUY {qty}@{best_ask}")
+                self.buy(best_ask, qty)
+        elif delta < 0 and best_bid is not None:
+            qty = min(-delta, self.VOLCANIC_ORDER_SIZE, self.limit + pos)
+            if qty > 0:
+                logger.print(f"SELL {qty}@{best_bid}")
+                self.sell(best_bid, qty)
+
+    def get_micro_price(self, od: OrderDepth) -> Optional[float]:
+        if not od.buy_orders or not od.sell_orders:
+            return None
+        bid = max(od.buy_orders.keys())
+        ask = min(od.sell_orders.keys())
+        if bid >= ask:
+            return (bid + ask) / 2
+        bid_vol = od.buy_orders[bid]
+        ask_vol = abs(od.sell_orders[ask])
+        return (bid * ask_vol + ask * bid_vol) / (bid_vol + ask_vol)
+
+    def get_estimate_price(self, od: OrderDepth) -> Optional[float]:
+        bids = od.buy_orders
+        asks = od.sell_orders
+        if bids and asks:
+            return (max(bids) + min(asks)) / 2
+        elif bids:
+            return float(max(bids))
+        elif asks:
+            return float(min(asks))
+        return None
+
+    def save(self) -> JSON:
+        return list(self.price_history)
+
+    def load(self, data: JSON) -> None:
+        if data:
+            self.price_history = deque(data, maxlen=self.PRICE_HISTORY_MAXLEN)
+
 
 class BlackScholes:
     @staticmethod
