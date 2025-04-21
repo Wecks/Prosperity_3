@@ -7,6 +7,7 @@ from enum import IntEnum
 from statistics import NormalDist
 from typing import Any, TypeAlias, Deque
 from math import log, sqrt
+from typing import Optional
 
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
