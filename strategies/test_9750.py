@@ -529,8 +529,8 @@ class IV_history:
     def set_IV_history(self, product: str, IV_history: List[float]) -> None:
         if product == "VOLCANIC_ROCK_VOUCHER_9500":
             self.v_9500_IV_history = IV_history
-        elif product == "VOLCANIC_ROCK_VOUCHER_9500":
-            self.v_9500_IV_history = IV_history
+        elif product == "VOLCANIC_ROCK_VOUCHER_9750":
+            self.v_9750_IV_history = IV_history
         elif product == "VOLCANIC_ROCK_VOUCHER_10000":
             self.v_10000_IV_history = IV_history
         elif product == "VOLCANIC_ROCK_VOUCHER_10250":
