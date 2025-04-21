@@ -751,7 +751,7 @@ class VolcanicRockStrategy(Strategy):
     VOLCANIC_THRESHOLD = 2 # 5
     VOLCANIC_ORDER_SIZE = 10 # 10
     VOLCANIC_STOP_LOSS_THRESHOLD = 10000000  # effectively disables stop-loss
-    PRICE_HISTORY_MAXLEN = VOLCANIC_SMA_WINDOW + 5
+    PRICE_HISTORY_MAXLEN = VOLCANIC_SMA_WINDOW + 40
 
     def __init__(self, symbol: Symbol, limit: int) -> None:
         super().__init__(symbol, limit)
