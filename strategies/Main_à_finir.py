@@ -775,8 +775,8 @@ class Trader:
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
-            "VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy,
-            "VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy,
+            #"VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy, A peaufiner avant de remettre
+            #"VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy, A peaufiner avant de remettre
             "MAGNIFICENT_MACARONS":MagnificentMacaronsStrategy
         }.items()}
 
