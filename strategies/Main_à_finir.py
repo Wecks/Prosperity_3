@@ -6,6 +6,8 @@ from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder
 from enum import IntEnum
 from statistics import NormalDist
 from typing import Any, TypeAlias, Deque
+from math import log, sqrt
+
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 
@@ -743,6 +745,119 @@ class MagnificentMacaronsStrategy(Strategy):
                     self.sell(market_price, sell_qty)
                 return
 
+class BlackScholes:
+    @staticmethod
+    def black_scholes_call(spot, strike, tte, vol):
+        d1 = ((log(spot) - log(strike)) + 0.5*vol*vol*tte) / (vol*sqrt(tte))
+        d2 = d1 - vol*sqrt(tte)
+        return spot*NormalDist().cdf(d1) - strike*NormalDist().cdf(d2)
+
+    @staticmethod
+    def implied_volatility(call_price, spot, strike, tte,
+                           max_iter=200, tol=1e-15):
+        lo, hi = 1e-3, 1.0
+        vol = (lo+hi)/2
+        for _ in range(max_iter):
+            price = BlackScholes.black_scholes_call(spot, strike, tte, vol)
+            diff = price - call_price
+            if abs(diff) < tol: break
+            if diff > 0: hi = vol
+            else: lo = vol
+            vol = (lo+hi)/2
+        return vol
+# —————————————————————————————————————————————————————————————————————————
+# 3) Historique d’IV
+class IV_history:
+    def __init__(self):
+        self.data: dict[str, list[float]] = {
+            Product.VOLCANIC_ROCK_VOUCHER_10000: []
+        }
+    def get(self, prod: str) -> list[float]:
+        return self.data.setdefault(prod, [])
+    def set(self, prod: str, hist: list[float]) -> None:
+        self.data[prod] = hist
+
+IV_history = IV_history()
+# —————————————————————————————————————————————————————————————————————————
+# 4) Status pour faciliter accès
+class Status:
+    def __init__(self, product: str, state, strike: int = None):
+        self.prod = product
+        self.state = state
+        self.strike = strike
+        self.price_hist: list[float] = []
+        self.iv_hist: list[float] = []
+
+    @property
+    def bids(self):   return list(self.state.order_depths[self.prod].buy_orders.items())
+    @property
+    def asks(self):   return list(self.state.order_depths[self.prod].sell_orders.items())
+    @property
+    def pos(self):    return self.state.position.get(self.prod, 0)
+    @property
+    def best_bid(self): return max(self.state.order_depths[self.prod].buy_orders.keys(), default=0)
+    @property
+    def best_ask(self): return min(self.state.order_depths[self.prod].sell_orders.keys(), default=float('inf'))
+    @property
+    def vwap(self):
+        b, a = self.best_bid, self.best_ask
+        return (b+a)/2 if b and a!=float('inf') else b or a or 0.0
+    @property
+    def tte(self):
+        # adapter selon ton round / time‐step
+        return (7 - (self.state.timestamp/1_000_000)) / 252.0
+
+    def update_hist(self):
+        # IV
+        iv = BlackScholes.implied_volatility(
+            call_price=self.vwap,
+            spot=Status(Product.VOLCANIC_ROCK, self.state).vwap,
+            strike=self.strike,
+            tte=self.tte
+        )
+        h = IV_history.get(self.prod)
+        h.append(iv); IV_history.set(self.prod, h[-10:])
+        self.iv_hist = IV_history.get(self.prod)
+
+        # price
+        self.price_hist.append(self.vwap)
+        if len(self.price_hist)>20: self.price_hist=self.price_hist[-20:]
+# —————————————————————————————————————————————————————————————————————————
+# 5) Méthode de trading pour 10000
+class Trade:
+    @staticmethod
+    def voucher_10000(st: Status, underlying: Status) -> list[Order]:
+        orders: list[Order] = []
+        # on ne traite que si le produit existe
+        if st.prod not in st.state.order_depths: 
+            return orders
+
+        st.update_hist(); underlying.update_hist()
+        current_iv = st.iv_hist[-1]
+        prev_iv = sum(st.iv_hist)/len(st.iv_hist)
+        # seuil de trading
+        base = 0.002
+        if current_iv > prev_iv + base and st.bids and st.pos > -200:
+            qty = min(200 + st.pos, st.bids[0][1])
+            if qty>0: orders.append(Order(st.prod, st.best_bid, -qty))
+        elif current_iv < prev_iv - base and st.asks and st.pos < 200:
+            qty = min(200 - st.pos, abs(st.asks[0][1]))
+            if qty>0: orders.append(Order(st.prod, st.best_ask, qty))
+        return orders
+
+class VolcanicRockVoucher10000Strategy(Strategy):
+    def __init__(self, symbol: Symbol, limit: int) -> None:
+        super().__init__(symbol, limit)
+
+    def act(self, state: TradingState) -> None:
+        # underlying et voucher
+        underlying = Status(Product.VOLCANIC_ROCK, state)
+        st10000    = Status(self.symbol, state, strike=10000)
+        for o in Trade.voucher_10000(st10000, underlying):
+            self.orders.append(o)
+
+
+
 class Trader:
     def __init__(self) -> None:
         limits = {
@@ -774,7 +889,7 @@ class Trader:
             "PICNIC_BASKET2": GiftBasketStrategy,
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
-            "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
+            "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucher10000Strategy,
             "VOLCANIC_ROCK_VOUCHER_10250": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10500": VolcanicRockVoucherStrategy,
             "MAGNIFICENT_MACARONS":MagnificentMacaronsStrategy
