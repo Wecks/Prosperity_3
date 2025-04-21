@@ -705,7 +705,7 @@ class MagnificentMacaronsStrategy(Strategy):
         self.sun_history: deque[float] = deque(maxlen=500)
         # static base CSI chosen from backtest
         self.base_csi: float = 55.5
-        self.threshold: float = 0
+        self.threshold: float = 5
         self.persistent_length: int = 100     # consecutive ticks under effective CSI
         self.per_trade_size: int = 5        # max units per conversion
 
