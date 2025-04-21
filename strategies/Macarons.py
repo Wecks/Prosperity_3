@@ -126,11 +126,11 @@ class Product:
 # Enhanced parameters for larger swings
 PARAMS = {
     Product.MAGNIFICENT_MACARONS: {
-        "make_edge": 2,
-        "make_min_edge": 1,
+        "make_edge": 1,
+        "make_min_edge": 0.5,
         "make_probability": 0.566,
-        "init_make_edge": 2,
-        "min_edge": 0.6,
+        "init_make_edge": 1,
+        "min_edge": 0.3,
         "volume_avg_timestamp": 5,
         "volume_bar": 75,
         "dec_edge_discount": 0.8,
