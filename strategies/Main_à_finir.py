@@ -781,7 +781,7 @@ class Trader:
             "CROISSANTS": PicnicBasketStrategy,
             "DJEMBES": PicnicBasketStrategy,
             "PICNIC_BASKET1": PicnicBasketStrategy,
-            "PICNIC_BASKET2": PicnicBasketStrategy,
+            "PICNIC_BASKET2": GiftBasketStrategy,
             "VOLCANIC_ROCK_VOUCHER_9500": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_9750": VolcanicRockVoucherStrategy,
             "VOLCANIC_ROCK_VOUCHER_10000": VolcanicRockVoucherStrategy,
