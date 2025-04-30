@@ -1,3 +1,7 @@
+# Copyright (c) 2025 Alexis Lemaire, Mathis Fourreau, Pedro Azevedo
+# This file is part of IMC Prosperity 3 Trading Algorithms and is licensed under the MIT License.
+# See the LICENCE file in the project root for full license text.
+
 import json
 import math
 import sys

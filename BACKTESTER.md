@@ -19,7 +19,6 @@ This guide explains how to use the IMC Prosperity 3 backtester to test and optim
   - [Optimization](#optimization)
     - [Available Optimization Scripts](#available-optimization-scripts)
     - [Usage](#usage)
-    - [Important Note](#important-note)
   - [Additional Resources](#additional-resources)
 
 ## Setup
@@ -39,9 +38,14 @@ This guide explains how to use the IMC Prosperity 3 backtester to test and optim
 
 ## Helper Scripts
 
-We provide convenient scripts that simplify the backtesting process.
+> **Deprecated:**
+> The scripts `backtest.sh` and `backtest_all.sh` are now **deprecated**. Please use the `prosperity3bt` command and library for all backtesting. See below for details and usage. ([prosperity3bt GitHub](https://github.com/jmerle/imc-prosperity-3-backtester))
+
+We provide convenient scripts that simplify the backtesting process, but these are no longer maintained and may not support all new features.
 
 ### backtest.sh - For Specific Rounds
+
+> **Deprecated:** Use `prosperity3bt` directly instead.
 
 Test a strategy on specific rounds or days with a clean interface.
 
@@ -73,6 +77,8 @@ Results are saved to `logs/backtest_results/` with filenames reflecting the test
 
 ### backtest_all.sh - For All Rounds
 
+> **Deprecated:** Use `prosperity3bt` directly instead.
+
 Run your strategy on all available rounds in one command.
 
 **Usage:**
@@ -93,6 +99,8 @@ Run your strategy on all available rounds in one command.
 Results are saved to `logs/backtest_results/<strategy>_all_rounds.log`.
 
 ## Manual Backtesting
+
+**Recommended:** Use the `prosperity3bt` command and library for all backtesting. This is the official and most up-to-date method. See the [prosperity3bt GitHub repository](https://github.com/jmerle/imc-prosperity-3-backtester) for documentation and updates.
 
 For more control, use the `prosperity3bt` command directly:
 
@@ -171,6 +179,8 @@ prosperity3bt strategies/round4.py 1 --vis
 
 The repository includes optimization scripts to find optimal parameters for your strategies.
 
+> **Note:** Some optimizer scripts require your strategy file to have a specific name (e.g., `DJEMBES.py`, `CROISSANTS.py`, etc.). You may need to rename or adjust your strategy files before running these scripts for them to work properly.
+
 ### Available Optimization Scripts
 
 - **optimize_croissants.sh**: Optimizes CROISSANTS thresholds
@@ -178,6 +188,7 @@ The repository includes optimization scripts to find optimal parameters for your
 - **optimize_jams.sh**: Optimizes JAMS thresholds
 - **optimize_picnic_basket1.sh**: Optimizes PICNIC_BASKET1 thresholds
 - **optimize_picnic_basket2.sh**: Optimizes PICNIC_BASKET2 thresholds
+- **optimize_<assetname>_spread_mult**: Used for counterparty optimization. See [strategies/optimization_conterparty_test](./strategies/optimization_conterparty_test/)
 
 ### Usage
 
@@ -188,16 +199,7 @@ The repository includes optimization scripts to find optimal parameters for your
 # Check results in optimization_results directory
 ```
 
-### Important Note
-
-These optimization scripts require your strategy code to:
-
-1. Contain configurable thresholds that can be modified
-2. Use a specific format for thresholds (e.g., `"JAMS": {"long": 0, "short": 150}`)
-
-The scripts create temporary modified copies of your strategy files and find optimal parameter values based on PnL results.
-
-All optimization results are saved to CSV files in the `optimization_results/` directory with timestamps.
+> **Tip:** If you encounter errors, ensure your strategy file matches the expected name for the optimizer script you are using.
 
 ## Additional Resources
 

@@ -1,3 +1,7 @@
+# Copyright (c) 2025 Alexis Lemaire, Mathis Fourreau, Pedro Azevedo
+# This file is part of IMC Prosperity 3 Trading Algorithms and is licensed under the MIT License.
+# See the LICENCE file in the project root for full license text.
+
 import json
 import math
 from abc import abstractmethod
@@ -1107,7 +1111,7 @@ class VolcanicRockVoucherStrategy(SignalStrategy):
 
         # Generate signals based on pricing difference
         if voucher_price > expected_price + threshold:
-            return Signal.SHORT  # Voucher is overpriced    
+            return Signal.SHORT  # Voucher is overpriced
         elif voucher_price < expected_price - threshold:
             return Signal.LONG   # Voucher is underpriced
 
