@@ -52,7 +52,7 @@ IMC-Prosperity/
 ├── logs/                 # Strategy execution logs and results
 ├── backtester/           # Backtesting and optimization tools
 │   └── optimizers/       # Parameter optimization scripts
-└── templates/            # Template files provided by the competition
+└── templates/            # Template files
 ```
 
 ## Implemented Strategies
